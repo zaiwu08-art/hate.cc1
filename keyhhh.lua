@@ -5,10 +5,10 @@
 
 ---------------------------------------------------------------- 配置区（必改）
 local APP_NAME    = "hate.CC"
-local OWNER_ID    = "在这里填你的OwnerID"
-local APP_SECRET  = "在这里填你的Secret"
+local OWNER_ID    = "RXOyhCyuBv"
+local APP_SECRET  = "RXOyhCyuBv"
 local APP_VERSION = "1.0"
-local PAYLOAD_URL = "https://raw.githubusercontent.com/你的用户名/你的仓库/main/HateCC.lua"
+local PAYLOAD_URL = "https://raw.githubusercontent.com/zaiwu08-art/hate.cc1/refs/heads/main/yeahhhh"
 ----------------------------------------------------------------
 
 -- 防重复加载（调试需反复重跑就先注释这两行）
