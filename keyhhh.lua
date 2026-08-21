@@ -1,24 +1,71 @@
 --[[
-    hate.CC 加载器（KeyAuth 版）
-    ⚠ 此源码含你的 Secret，测试完后必须混淆才能公开！
+    hate.CC 加载器（KeyAuth 版 · 修复版）
+    ⚠ 此源码含你的 Secret，测试完成后必须混淆才能公开！
 --]]
 
 ---------------------------------------------------------------- 配置区（必改）
-local KEYAUTH_API = "https://keyauth.win/api/1.2/"   -- 若官方更新版本以文档为准
 local APP_NAME    = "hate.CC"
-local OWNER_ID    = "RXOyhCyuBv"
-local APP_SECRET  = "8623874dafddb49f0915f6d709f5f2a3e84093c88b1ca9f03a56a9abe4b6a5fa"
+local OWNER_ID    = "在这里填你的OwnerID"
+local APP_SECRET  = "在这里填你的Secret"
 local APP_VERSION = "1.0"
--- 混淆后的本体地址（上一轮你搭好的 GitHub raw 链接）
-local PAYLOAD_URL = "https://github.com/zaiwu08-art/hate.cc1/blob/main/yeahhhh"
+-- 混淆后的本体地址（GitHub raw 链接）
+local PAYLOAD_URL = "https://raw.githubusercontent.com/你的用户名/你的仓库/main/HateCC.lua"
 ----------------------------------------------------------------
 
--- 防重复加载（测试时若想重跑，重新执行整个脚本前注意此标记）
-if (getgenv and getgenv() or _G).MoonLoader then return end
-(getgenv and getgenv() or _G).MoonLoader = true
+-- 防重复加载（调试期间如需反复重跑，先注释掉这两行）
+if (getgenv and getgenv() or _G).HateCC then return end
+(getgenv and getgenv() or _G).HateCC = true
 
--- 载入 KeyAuth
-local KeyAuth = loadstring(game:HttpGet(KEYAUTH_API))()
+---------------------------------------------------------------- 通用下载（自动兼容各种执行器）
+local function fetch(url)
+    if type(game) == "table" and type(game.HttpGet) == "function" then
+        local ok, r = pcall(function() return game:HttpGet(url) end)
+        if ok and type(r) == "string" and #r > 0 then return r end
+    end
+    local req = (type(request) == "function" and request)
+        or (type(http_request) == "function" and http_request)
+        or (type(syn) == "table" and syn.request)
+        or (type(http) == "table" and http.request)
+    if type(req) == "function" then
+        local ok, r = pcall(req, { Url = url, Method = "GET" })
+        if ok and r and type(r.Body) == "string" and #r.Body > 0 then return r.Body end
+    end
+    local okHS, hs = pcall(function() return game:GetService("HttpService") end)
+    if okHS and hs then
+        local ok, r = pcall(function() return hs:GetAsync(url) end)
+        if ok and type(r) == "string" and #r > 0 then return r end
+    end
+    return nil
+end
+
+---------------------------------------------------------------- 载入 KeyAuth（带诊断）
+if type(loadstring) ~= "function" then
+    error("[hate.CC] 当前执行器没有 loadstring，请换支持 loadstring 的执行器")
+end
+
+local KeyAuth
+for _, api in ipairs({
+    "https://keyauth.win/api/1.2/",
+    "https://keyauth.win/api/1.3/",
+}) do
+    local src = fetch(api)
+    if not src then
+        warn("[hate.CC] 下载失败: " .. api)
+    else
+        local fn, err = loadstring(src)
+        if type(fn) == "function" then
+            KeyAuth = fn()
+            break
+        else
+            warn("[hate.CC] 编译失败 " .. api .. ": " .. tostring(err))
+            warn("[hate.CC] 内容前80字符: " .. src:sub(1, 80))
+        end
+    end
+end
+if not KeyAuth then
+    error("[hate.CC] KeyAuth 载入失败，请看上方 warn 输出的具体原因")
+end
+
 local auth = KeyAuth:new({
     name = APP_NAME, ownerid = OWNER_ID,
     secret = APP_SECRET, version = APP_VERSION,
@@ -31,7 +78,7 @@ local Players = game:GetService("Players")
 local UIS     = game:GetService("UserInputService")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "MoonLoaderUI"
+gui.Name = "HateCCUI"
 gui.ResetOnSpawn = false
 gui.DisplayOrder = 100
 pcall(function() gui.Parent = (gethui and gethui()) or game:GetService("CoreGui") end)
@@ -59,7 +106,7 @@ local title = make("TextLabel", {
     Size = UDim2.new(1, 0, 0, 36),
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
     BorderSizePixel = 0,
-    Text = "MoonGui | 加载器",
+    Text = "hate.CC | 加载器",
     TextColor3 = Color3.fromRGB(255, 255, 255),
     Font = Enum.Font.GothamBold, TextSize = 15,
 }, main)
@@ -94,7 +141,7 @@ local function makeBox(ph, isPass, y)
 end
 
 local userBox = makeBox("用户名", false, 66)
-local passBox = makeBox("密码",   true,  106)
+local passBox = makeBox("密码", true, 106)
 local keyBox  = makeBox("卡密（注册必填）", false, 146)
 
 local mode = "login"
@@ -114,7 +161,7 @@ local confirmBtn = make("TextButton", {
     Position = UDim2.new(0, 10, 0, 220),
     BackgroundColor3 = Color3.fromRGB(0, 122, 255),
     BorderSizePixel = 0,
-    Text = "确 定", TextColor3 = Color3.fromRGB(255,255,255),
+    Text = "确 定", TextColor3 = Color3.fromRGB(255, 255, 255),
     Font = Enum.Font.GothamBold, TextSize = 15,
 }, main)
 make("UICorner", { CornerRadius = UDim.new(0, 8) }, confirmBtn)
@@ -124,7 +171,7 @@ local cancelBtn = make("TextButton", {
     Position = UDim2.new(0.5, 5, 0, 220),
     BackgroundColor3 = Color3.fromRGB(70, 70, 80),
     BorderSizePixel = 0,
-    Text = "取 消", TextColor3 = Color3.fromRGB(255,255,255),
+    Text = "取 消", TextColor3 = Color3.fromRGB(255, 255, 255),
     Font = Enum.Font.GothamBold, TextSize = 15,
 }, main)
 make("UICorner", { CornerRadius = UDim.new(0, 8) }, cancelBtn)
@@ -183,21 +230,28 @@ confirmBtn.MouseButton1Click:Connect(function()
     local u, p, k = trim(userBox.Text), passBox.Text, trim(keyBox.Text)
 
     task.spawn(function()
-        -- 只填卡密 → 纯卡密登录；否则按模式 注册/登录
-        if u == "" and p == "" and k ~= "" then
-            auth:license(k)
-        elseif mode == "register" then
-            if u == "" or p == "" or k == "" then
-                setStatus("注册需 用户名+密码+卡密", Color3.fromRGB(255,120,120))
-                busy = false return
+        local callOk, callErr = pcall(function()
+            if u == "" and p == "" and k ~= "" then
+                auth:license(k)                      -- 只填卡密 → 纯卡密登录
+            elseif mode == "register" then
+                if u == "" or p == "" or k == "" then
+                    setStatus("注册需 用户名+密码+卡密", Color3.fromRGB(255,120,120))
+                    busy = false return
+                end
+                auth:register(u, p, k)               -- 注册
+            else
+                if u == "" or p == "" then
+                    setStatus("登录需 用户名+密码", Color3.fromRGB(255,120,120))
+                    busy = false return
+                end
+                auth:login(u, p)                     -- 登录
             end
-            auth:register(u, p, k)
-        else
-            if u == "" or p == "" then
-                setStatus("登录需 用户名+密码", Color3.fromRGB(255,120,120))
-                busy = false return
-            end
-            auth:login(u, p)
+        end)
+
+        if not callOk then
+            setStatus("调用失败：" .. tostring(callErr), Color3.fromRGB(255, 120, 120))
+            busy = false
+            return
         end
 
         if ok() then
@@ -205,10 +259,16 @@ confirmBtn.MouseButton1Click:Connect(function()
             task.wait(0.3)
             gui:Destroy()
             -- 拉取并执行本体
-            local got, src = pcall(function() return game:HttpGet(PAYLOAD_URL) end)
-            if got and type(src) == "string" and #src > 0 then
-                local fn = loadstring(src)
-                if fn then fn() end
+            local src = fetch(PAYLOAD_URL)
+            if type(src) == "string" and #src > 0 then
+                local fn, err = loadstring(src)
+                if type(fn) == "function" then
+                    fn()
+                else
+                    warn("[hate.CC] 本体编译失败: " .. tostring(err))
+                end
+            else
+                warn("[hate.CC] 本体下载失败: " .. PAYLOAD_URL)
             end
         else
             setStatus(msg(), Color3.fromRGB(255, 120, 120))
