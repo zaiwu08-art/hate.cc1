@@ -1,6 +1,6 @@
--- // HATE - PANDORA STYLE EDITION (Ecco移植修复版 + 血量/骨骼ESP)
+-- // HATE - PANDORA STYLE EDITION (Ecco移植修复版 + 血量/骨骼ESP + Korblox/Headless优化)
 -- ==========================================
--- 防重复加载与全局卸载接口 (解决掉帧与叠加问题)
+-- 防重复加载与全局卸载接口
 -- ==========================================
 local genv = getgenv() or shared
 if genv.__HateCC_Loaded then
@@ -11,15 +11,14 @@ if genv.__HateCC_Loaded then
 end
 genv.__HateCC_Loaded = true
 -- ==========================================
-
 shared.Hate = {
     ['Settings'] = { ['Target Aim']=true, ['Knock Check']=true, ['Visible Check']=false },
     ['Keybinds'] = {
         [' UI Toggle']   = { ['Key'] = 'RightShift' },
-        ['Target Lock'] = { ['Key'] = 'E', ['Mode'] = 'Toggle' },
+        ['Target Lock '] = { ['Key'] = 'E', ['Mode'] = 'Toggle' },
         ['Silent Aim']  = { ['Key'] = '', ['Mode'] = 'Toggle' },
         ['Camera Lock'] = {   ['Key'] = '', ['Mode'] = 'Toggle' },
-        ['Trigger Bot'] = { ['Key'] = '', ['Mode'] = 'Toggle' },
+        ['Trigger Bot'] = {  ['Key'] = '', ['Mode'] = 'Toggle' },
         ['Rage Mode']   = { ['Key'] = '', ['Mode'] = 'Toggle' },
         ['Speed']       = { ['Key']   = '' },
         ['ESP']         = { ['Key'] = '' },
@@ -29,21 +28,21 @@ shared.Hate = {
     },
     ['FOV'] = { ['Enabled']=false, ['Visible']=true, ['Size']=Vector2.new(120,120), ['Thickness']=1.5, ['Color']=Color3.fromRGB(138,110,255) },
     ['Silent Aim FOV'] = { ['Enabled']=false, ['Visible']=true, ['Size']=Vector2.new(90,90), ['Thickness']=1.5, ['Color']=Color3.fromRGB(255,80,80) },
-    ['Lock Line'] = { ['Enabled']=false, ['Color']=Color3.fromRGB(138,110,255), ['Thickness']=1.5 } ,
+    ['Lock Line'] = { ['Enabled']=false, ['Color']=Color3.fromRGB(138,110,255), ['Thickness']=1.5 },
     ['Silent Aim'] = { ['Enabled']=false,  ['Hit Part']='Head', ['Sticky']=false, ['Use Prediction']=false, ['Prediction']={['X']=0,['Y']=0,['Z']=0} },
     ['Camera Lock'] = { ['Enabled']=false, ['Hit Part']='Head', ['Smoothing']=10, ['Sticky']=false, ['Use Prediction']=false, ['Prediction']={['X']=0,['Y']=0,['Z']=0} },
     ['Trigger Bot'] = { ['Enabled']=false, ['Delay']=0.1, ['Specific Weapons']={['Enabled']=false,['Weapons']={}} },
     ['Rage Mode'] = { ['Enabled']=false, ['Delay']=0.05, ['Prediction']=0.13 },
     ['Skin Changer'] = { ['Enabled']=false, ['Skins']={} },
-    ['Spread'] = { ['Enabled']=false, ['Amount']=0, ['Specific Weapons']={['Enabled']=false,['Weapons']={}} },
+    ['Spread'] = { ['Enabled']=false,  ['Amount']=0, ['Specific Weapons']={['Enabled']=false,['Weapons']={}} },
     ['Speed'] = { ['Enabled']=false, ['Multiplier']=5, ['Anti Fling']=false },
     ['Hitbox Expander'] = { ['Enabled']=false, ['Size']=5 },
     ['No Jump Cooldown'] = { ['Enabled']=false },
-    ['Delay Changer'] = { ['Enabled']=false, ['Delay']=0.1 , ['Specific Weapons']={['Enabled']=false,['Weapons']={}} },
+    ['Delay Changer'] = { ['Enabled']=false, ['Delay']=0.1, ['Specific Weapons']={['Enabled']=false,['Weapons']={}} },
     ['Visual Awareness'] = {
         ['Enabled']=false, ['Weapon ESP']=false, ['Keybind Display']=false, ['Anti Record']=false,
         ['Color']=Color3.fromRGB(138,110,255), ['Target Color']=Color3.fromRGB(255,80,80), ['Blacklist Color']=Color3.fromRGB(255,45,85),
-        ['Line']={['Enabled']=false,['Color']=Color3.fromRGB( 138,110,255),['Thickness']=1},
+        ['Line']={['Enabled']=false,['Color']=Color3.fromRGB(138,110,255),['Thickness']=1},
         ['Box']={['Enabled']=false,['Color']=Color3.fromRGB(138,110,255),['Thickness']=1.5},
         ['Health Bar']={['Enabled']=false,['Show Text']=true},
         ['Skeleton']={['Enabled']=false,['Color']=Color3.fromRGB(255,255,255),['Thickness']=1},
@@ -52,12 +51,14 @@ shared.Hate = {
     ['Infinite Range'] = { ['Enabled']=false, ['Max Range']=9999 },
     ['Rapid Fire'] = { ['Enabled']=false, ['Delay']=0.1, ['Specific Weapons']={['Enabled']=false,['Weapons']={}} },
     ['Teleport'] = { ['Enabled']=false, ['Mode']='Follow', ['Distance']=5, ['Speed']=50, ['Target']=nil },
-    ['Utility'] = { ['Anti Trip']=false, ['Anti Stomp']=false, ['Clean Scripts']=false, ['No Recoil']=false }, 
-    ['Double Tap'] = { ['Enabled']=false, ['Weapons']={['[Revolver]']=true, ['[Silencer]']=true, ['[Glock]']=true, ['[Deagle]']=true} },
+    ['Utility'] = { ['Anti Trip']=false, ['Anti Stomp']=false, ['Clean Scripts']=false, ['No Recoil']=false },
+    ['Double Tap'] = { ['Enabled']=false, ['Weapons']={ ['[Revolver]']=true, ['[Silencer]']=true, ['[Glock]']=true, ['[Deagle]']=true} },
     ['Purchase Armor'] = { ['Enabled']=false },
-    ['Spoofing'] = { ['Headless']=false, ['Avatar Spoofer']={['Enabled']=false, ['UserId']=1} },
+    ['Spoofing'] = { 
+        ['Headless'] = false, 
+        ['Korblox'] = false 
+    },
 }
-
 local Config = shared.Hate
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -68,7 +69,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
-
 local currentTarget=nil; local isLocking=false; local triggerEnabled=false
 local silentAimActive=true; local cameraLockActive=false
 local rageActive=false
@@ -105,7 +105,7 @@ local function matchInput(bind,input)
     return false
 end
 local function isTyping() return UserInputService:GetFocusedTextBox()~=nil end
-local function isWhitelisted(p) return p and Whitelist[p.UserId]==true end 
+local function isWhitelisted(p) return p and Whitelist[p.UserId]==true end
 local function isBlacklisted(p) return p and Blacklist[p.UserId]==true end
 
 local CurrentLang="EN"
@@ -132,9 +132,9 @@ local Translations={
         TriggerBot="Trigger Bot",TriggerDelay="Trigger Delay (ms)",SpecificWeapons="Specific Weapons Only",WeaponList="Weapon List (comma)",
         NoSpread="No Spread",SpreadAmount="Spread Amount",RapidFire="Rapid Fire",RapidDelay="Rapid Delay (ms)",
         InfRange="Infinite Range",InfMaxRange="Max Range",HitboxExp="Hitbox Expander",HitboxSize="Hitbox Size",
-        Utility="Utility", AntiTrip="Anti Trip", AntiStomp="Anti Stomp", CleanScripts="Clean Scripts", NoRecoil="No Recoil",
-        DoubleTap="Double Tap", PurchaseArmor="Purchase Armor",
-        Spoofing="Spoofing", Headless="Headless", AvatarSpoof="Avatar Spoofer",
+        Utility="Utility",AntiTrip="Anti Trip",AntiStomp="Anti Stomp",CleanScripts="Clean Scripts",NoRecoil="No Recoil",
+        DoubleTap="Double Tap",PurchaseArmor="Purchase Armor",
+        Spoofing="Spoofing",Headless="Headless",Korblox="Korblox",
         PlayersSection="Players - WL / BL / Teleport",Teleport="Teleport",TeleportEnable="Enable Teleport",TeleportMode="Mode",TeleportDist="Distance (0-50)",TeleportSpeed="Follow Speed (0-50)",
         ConfigSection="Config Save / Load",ConfigName="Config Name...",Save="Save",Load="Load",Delete="Del",
         NoWeapon="Unarmed",Language="Language",Unload="Unload Script",PressKey="Press key / mouse...",Keybind="Keybind",Clear="Clear",
@@ -163,9 +163,9 @@ local Translations={
         TriggerBot="触发机器人",TriggerDelay="开枪延迟 (ms)",SpecificWeapons="仅限指定武器",WeaponList="武器名单 (逗号)",
         NoSpread="无扩散",SpreadAmount="扩散倍数",RapidFire="快速射击",RapidDelay="射击间隔 (ms)",
         InfRange="无限射程",InfMaxRange="最大射程",HitboxExp="命中框扩大",HitboxSize="命中框大小",
-        Utility="实用工具", AntiTrip="防摔倒", AntiStomp="防处决", CleanScripts="清理脚本", NoRecoil="无后坐力",
-        DoubleTap="双重射击", PurchaseArmor="自动买甲",
-        Spoofing="角色伪装", Headless="无头", AvatarSpoof="Avatar 伪装",
+        Utility="实用工具",AntiTrip="防摔倒",AntiStomp="防处决",CleanScripts="清理脚本",NoRecoil="无后坐力",
+        DoubleTap="双重射击",PurchaseArmor="自动买甲",
+        Spoofing="角色伪装",Headless="无头",Korblox="Korblox 腿部",
         PlayersSection="玩家 - 白/黑名单 / 传送",Teleport="传送",TeleportEnable="启用传送",TeleportMode="模式",TeleportDist="距离 (0-50)",TeleportSpeed="跟随速度 (0-50)",
         ConfigSection="参数存档 / 读取",ConfigName="存档名称...",Save="保存",Load="读取",Delete="删除",
         NoWeapon="未持武器",Language="语言",Unload="退出脚本",PressKey="按下键盘/鼠标按键...",Keybind="按键绑定",Clear="清除",
@@ -181,9 +181,8 @@ local function getWeaponDisplayName(toolName)
     if not toolName or toolName=="" then return T("NoWeapon") end
     return toolName
 end
-
 local function serializeValue(v,indent)
-    indent=indent or "  "
+    indent=indent or "   "
     local t=typeof(v)
     if t=="string" then return string.format("%q",v)
     elseif t=="number" or t=="boolean" then return tostring(v)
@@ -191,7 +190,7 @@ local function serializeValue(v,indent)
     elseif t=="Vector2" then return string.format("Vector2.new(%s,%s)",tostring(v.X),tostring(v.Y))
     elseif t=="Vector3" then return string.format("Vector3.new(%s,%s,%s)",tostring(v.X),tostring(v.Y),tostring(v.Z))
     elseif t=="table" then
-        local parts={}; local sub=indent.."  "
+        local parts={}; local sub=indent.."   "
         for k,val in pairs(v) do
             local ks=type(k)=="number" and ("["..k.."]") or ("["..string.format("%q",tostring(k)).."]")
             table.insert(parts,sub..ks.." = "..serializeValue(val,sub))
@@ -204,7 +203,6 @@ end
 local function serializeTable(t) return "return "..serializeValue(t,"") end
 local function deserialize(s) local fn=loadstring(s) if not fn then return nil end local ok,r=pcall(fn) return ok and r or nil end
 local function deepMerge(d,s) for k,v in pairs(s) do if type(v)=="table" and type(d[k])=="table" then deepMerge(d[k],v) else d[k]=v end end end
-
 local CONFIG_FOLDER="HateConfigs"
 local function filesAvailable() return type(writefile)=="function" and type(readfile)=="function" end
 local function saveConfigFile(n)
@@ -231,7 +229,6 @@ local function listConfigFiles()
     return names
 end
 local function deleteConfigFile(n) pcall(function() if delfile and isfile(CONFIG_FOLDER.."/"..n..".config") then delfile(CONFIG_FOLDER.."/"..n..".config") end end) end
-
 local function elasticOut(t) local p=0.3 return math.pow(2,-10*t)*math.sin((t-p/4)*(2*math.pi)/p)+1 end
 local function sineInOut(t) return -(math.cos(math.pi*t)-1)/2 end
 
@@ -270,14 +267,13 @@ local function canSeeTarget(part)
     if (isAirborne or velY>8) and isLocking then return true end
     local origin=Camera.CFrame.Position
     local direction=(part.Position-origin).Unit*(part.Position-origin).Magnitude
-    local rp=RaycastParams.new() 
+    local rp=RaycastParams.new()
     rp.FilterDescendantsInstances={LocalPlayer.Character,character}
     rp.FilterType=Enum.RaycastFilterType.Exclude
     rp.IgnoreWater=true
     local result=Workspace:Raycast(origin,direction,rp)
     return result==nil or result.Instance:IsDescendantOf(character)
 end
-
 local function getClosestBodyPart(character)
     local closestPart,shortestDist=nil,math.huge
     local parts={"Head","UpperTorso","HumanoidRootPart","LowerTorso","LeftUpperArm","RightUpperArm","LeftLowerArm","RightLowerArm","LeftHand","RightHand","LeftUpperLeg","RightUpperLeg","LeftLowerLeg","RightLowerLeg","LeftFoot","RightFoot"}
@@ -292,7 +288,6 @@ local function getClosestBodyPart(character)
     end
     return closestPart
 end
-
 local function isMouseInFOV(character,fovCfg)
     fovCfg=fovCfg or Config['FOV']
     if not fovCfg['Enabled'] then return true end
@@ -304,7 +299,6 @@ local function isMouseInFOV(character,fovCfg)
     local center=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y/2)
     return (Vector2.new(pos.X,pos.Y)-center).Magnitude<=(fovCfg['Size'].X/2)
 end
-
 local function getValidTargetPlayers()
     local candidates={}
     for _,player in pairs(Players:GetPlayers()) do
@@ -317,7 +311,6 @@ local function getValidTargetPlayers()
     if #bl>0 then return bl end
     return candidates
 end
-
 local function findClosestTarget(hitPartName,fovCfg)
     hitPartName=hitPartName or Config['Silent Aim']['Hit Part']
     fovCfg=fovCfg or Config['FOV']
@@ -333,7 +326,6 @@ local function findClosestTarget(hitPartName,fovCfg)
     end
     return closestTarget
 end
-
 local function getPredictedPosition(part,config)
     if not config['Use Prediction'] then return part.Position end
     local vel=part.AssemblyLinearVelocity or part.Velocity or Vector3.new(0,0,0)
@@ -345,7 +337,6 @@ local function getPredictedPosition(part,config)
         return part.Position+(vel*pred)
     end
 end
-
 local function getSAStickyTarget()
     if not saStickyTarget then return nil end
     local character=saStickyTarget
@@ -356,7 +347,6 @@ local function getSAStickyTarget()
     if not hum or hum.Health<=0 then return nil end
     return Config['Silent Aim']['Hit Part']=='Closest Part' and getClosestBodyPart(character) or character:FindFirstChild(Config['Silent Aim']['Hit Part'])
 end
-
 local function getTargetForSilentAim()
     if not Config['Silent Aim']['Sticky'] then
         saStickyTarget=nil
@@ -376,7 +366,6 @@ local function getTargetForSilentAim()
     if t and Config['Silent Aim']['Sticky'] then saStickyTarget=t.Parent end
     return t
 end
-
 local function getTargetForCameraLock()
     if Config['Settings']['Target Aim'] and currentTarget and currentTarget.Parent then
         local player=Players:GetPlayerFromCharacter(currentTarget.Parent)
@@ -387,7 +376,6 @@ local function getTargetForCameraLock()
     end
     return findClosestTarget(Config['Camera Lock']['Hit Part'],Config['FOV'])
 end
-
 local function getStickyTarget()
     if not stickyTarget then return nil end
     local character=stickyTarget
@@ -398,7 +386,6 @@ local function getStickyTarget()
     if not hum or hum.Health<=0 then return nil end
     return Config['Camera Lock']['Hit Part']=='Closest Part' and getClosestBodyPart(character) or character:FindFirstChild(Config['Camera Lock']['Hit Part'])
 end
-
 local function applyCameraLock()
     if isSelfKnocked() then cameraLockPart=nil; stickyTarget=nil return end
     if not Config['Camera Lock']['Sticky'] then stickyTarget=nil end
@@ -424,11 +411,9 @@ local function applyCameraLock()
         Camera.CFrame=sc:Lerp(tc,sa*ba)
     end
 end
-
 local fovCircle=Drawing.new("Circle"); fovCircle.Visible=false; fovCircle.NumSides=60; fovCircle.Filled=false
 local saFovCircle=Drawing.new("Circle"); saFovCircle.Visible=false; saFovCircle.NumSides=60; saFovCircle.Filled=false
 local lockLine=Drawing.new("Line"); lockLine.Visible=false
-
 local function updateFOVCircle()
     if Unloaded then fovCircle.Visible=false; saFovCircle.Visible=false return end
     if Config['FOV']['Enabled'] and Config['FOV']['Visible'] and not PanicMode and Started then
@@ -446,7 +431,6 @@ local function updateFOVCircle()
         saFovCircle.Color=Config['Silent Aim FOV']['Color']
     else saFovCircle.Visible=false end
 end
-
 local function updateLockLine()
     if Unloaded or PanicMode or not Started then lockLine.Visible=false return end
     if not Config['Lock Line']['Enabled'] then lockLine.Visible=false return end
@@ -466,7 +450,6 @@ local function updateLockLine()
     end
     lockLine.Visible=false
 end
-
 local function TriggerBot()
     if Unloaded or not Started then return end
     if not Config['Trigger Bot']['Enabled'] or not triggerEnabled then return end
@@ -490,7 +473,6 @@ local function TriggerBot()
     end
     tool:Activate(); lastTriggerClick=tick()
 end
-
 local grm=getrawmetatable(game)
 local oldIndex=grm.__index
 setreadonly(grm,false)
@@ -507,7 +489,6 @@ grm.__index=function(self,key)
     end
     return oldIndex(self,key)
 end
-
 -- // Ecco移植: Double Tap
 local oldNamecall
 if grm and grm.__namecall then
@@ -533,7 +514,6 @@ if grm and grm.__namecall then
     end
 end
 setreadonly(grm,true)
-
 local oldRandom
 oldRandom=hookfunction(math.random,function(...)
     if Unloaded then return oldRandom(...) end
@@ -546,14 +526,13 @@ oldRandom=hookfunction(math.random,function(...)
                 if tool then
                     local found=false
                     for _,w in pairs(Config['Spread']['Specific Weapons']['Weapons']) do if tool.Name==w then found=true break end end
-                    if found then return oldRandom(...)*(Config['Spread']['Amount']/100) end
+                    if found then return oldRandom(...)(Config['Spread']['Amount']/100) end
                 end
-            else return oldRandom(...)*(Config['Spread']['Amount']/100) end
+            else return oldRandom(...)(Config['Spread']['Amount']/100) end
         end
     end
     return oldRandom(...)
 end)
-
 local function nameLooksLikeRange(n)
     local low=string.lower(n)
     return low:find("range",1,true)~=nil or low:find("dist",1,true)~=nil
@@ -578,7 +557,6 @@ local function irScan(tool)
         visit(tool)
     end)
 end
-
 do  --RAGE+SKIN
     local MuzzleOffsets={
         ['[Deagle]']=CFrame.new(0,0.382,-1.568),['[Revolver]']=CFrame.new(-0.1,0.4,1.8),
@@ -592,7 +570,6 @@ do  --RAGE+SKIN
         ['[P90]']=CFrame.new(0,0.3,-1.8),['[SilencerAR]']=CFrame.new(0,0.3,-2.0),
     }
     local ShotgunWeapons={['[Double-Barrel SG]']=true,['[TacticalShotgun]']=true,['[Shotgun]']=true,['[Drum-Shotgun]']=true}
-    
     local function getMuzzlePosition(tool)
         local handle=tool:FindFirstChild('Handle')
         if not handle then return nil end
@@ -610,7 +587,6 @@ do  --RAGE+SKIN
         if hm then return hm.WorldPosition end
         return fallback
     end
-    
     local function rageCanShoot(character)
         if not character then return false end
         local humanoid=character:FindFirstChildOfClass('Humanoid')
@@ -623,18 +599,15 @@ do  --RAGE+SKIN
         if character:FindFirstChild('FORCEFIELD') then return false end
         return true
     end
-    
     local RageRayParams=RaycastParams.new()
     RageRayParams.FilterType=Enum.RaycastFilterType.Exclude
     RageRayParams.IgnoreWater=true
     local RageLastFire={}
-    
     local function getRageTarget()
         if currentTarget and currentTarget.Parent then return currentTarget end
         if silentAimTarget and silentAimTarget.Parent then return silentAimTarget end
         return findClosestTarget(Config['Silent Aim']['Hit Part'],Config['FOV'])
     end
-    
     local function RageFire(tool,origin,direction,range)
         local handle=tool:FindFirstChild('Handle')
         if not handle then return end
@@ -654,7 +627,6 @@ do  --RAGE+SKIN
             mainEvent:FireServer('ShootGun',handle,origin,res and res.Position or (origin+direction*range),res and res.Instance,res and res.Normal)
         end
     end
-    
     local function RageCore()
         if Unloaded or not Started then return end
         if not (Config['Rage Mode']['Enabled'] and rageActive) then return end
@@ -703,12 +675,10 @@ do  --RAGE+SKIN
         end
     end
     track(RunService.Heartbeat:Connect(RageCore))
-
     local CachedSkinAssets=ReplicatedStorage:FindFirstChild('SkinAssets')
     local SkinModules=ReplicatedStorage:FindFirstChild('SkinModules')
     local SkinData=nil
     local AppliedSkins={}
-    
     local function LoadSkinData()
         if SkinData then return SkinData end
         if SkinModules and SkinModules:IsA('ModuleScript') then
@@ -717,7 +687,6 @@ do  --RAGE+SKIN
         end
         return SkinData
     end
-    
     local function GetSkinInfo(weaponName,skinName)
         local data=LoadSkinData()
         if not data then return nil end
@@ -726,7 +695,6 @@ do  --RAGE+SKIN
         if not ws then return nil end
         return ws[skinName] or ws[skinName:gsub('-',' ')] or ws[skinName:gsub('-','')]
     end
-    
     GetSkinList=function(weaponName)
         local list={'None'}
         local data=LoadSkinData()
@@ -739,7 +707,6 @@ do  --RAGE+SKIN
         end
         return list
     end
-    
     local function FindSourceMesh(skinName,isKnife)
         if not SkinModules then return nil end
         local clean=skinName:lower():gsub(' ','')
@@ -768,7 +735,6 @@ do  --RAGE+SKIN
         end
         return nil
     end
-    
     local function GetShootSound(weaponName,skinName)
         if not CachedSkinAssets then return nil end
         local gss=CachedSkinAssets:FindFirstChild('GunShootSounds')
@@ -779,7 +745,6 @@ do  --RAGE+SKIN
         if sv and sv:IsA('StringValue') then return sv.Value end
         return nil
     end
-    
     local KnifeOffsets={
         ['goldenagetanto']=CFrame.new(0,-0.20,-1.2)*CFrame.Angles(math.rad(90),math.rad(263.7),math.rad(180)),
         ['gpoknife']=CFrame.new(0,-0.32,-1.07)*CFrame.Angles(math.rad(90),math.rad(-97.4),math.rad(90)),
@@ -791,7 +756,6 @@ do  --RAGE+SKIN
         ['greendagger']=CFrame.new(-0.13,-0.24,-1.07)*CFrame.Angles(math.rad(89.05),math.rad(96.63),math.rad(180)),
         ['reddagger']=CFrame.new(-0.13,-0.24,-1.07)*CFrame.Angles(math.rad(89.05),math.rad(96.63),math.rad(180)),
     }
-    
     RemoveSkinFromTool=function(tool)
         local rec=AppliedSkins[tool]
         if not rec then return end
@@ -814,7 +778,6 @@ do  --RAGE+SKIN
         end
         AppliedSkins[tool]=nil
     end
-    
     ApplySkinToTool=function(tool,skinName)
         if not tool then return end
         local handle=tool:FindFirstChild('Handle')
@@ -878,13 +841,11 @@ do  --RAGE+SKIN
             end
         end
     end
-    
     local function ProcessToolForSkin(tool)
         if not Config['Skin Changer']['Enabled'] then return end
         local skin=Config['Skin Changer']['Skins'][tool.Name]
         if skin and skin~='' and skin~='None' then ApplySkinToTool(tool,skin) end
     end
-    
     local function hookSkinCharacter(character)
         if not character then return end
         for _,child in pairs(character:GetChildren()) do 
@@ -894,7 +855,6 @@ do  --RAGE+SKIN
             if child:IsA('Tool') then task.wait(0.1) ProcessToolForSkin(child) end
         end)
     end
-    
     local function hookSkinBackpack(bp)
         if not bp then return end
         for _,tool in pairs(bp:GetChildren()) do
@@ -904,7 +864,6 @@ do  --RAGE+SKIN
             if tool:IsA('Tool') then task.wait(0.1) ProcessToolForSkin(tool) end
         end)
     end
-    
     if LocalPlayer.Character then hookSkinCharacter(LocalPlayer.Character) end
     local bp0=LocalPlayer:FindFirstChildOfClass('Backpack')
     if bp0 then hookSkinBackpack(bp0) end
@@ -915,7 +874,6 @@ do  --RAGE+SKIN
         if bp then hookSkinBackpack(bp) end
     end)
 end --RAGE+SKIN
-
 -- ==========================================
 -- Ecco 核心移植: Utility & Spoofing & Purchase Armor & No Jump Cooldown
 -- ==========================================
@@ -933,7 +891,6 @@ local function CleanToolScripts(tool)
         end))
     end
 end
-
 local function WatchCharacterForScripts(char)
     if not char then return end
     for _,child in pairs(char:GetChildren()) do
@@ -946,7 +903,6 @@ local function WatchCharacterForScripts(char)
         end
     end))
 end
-
 local SavedCFrame = Camera.CFrame
 local RestorePending = false
 local function QueueRestore()
@@ -962,14 +918,12 @@ end
 track(RunService.RenderStepped:Connect(function()
     if not RestorePending then SavedCFrame = Camera.CFrame end
 end))
-
 local MainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
 if MainEvent then
     track(MainEvent.OnClientEvent:Connect(function(Packet)
         if Packet == "ShootingRecoil" then QueueRestore() end
     end))
 end
-
 local function SetupUtility(Character)
     if not Character then return end
     local Humanoid = Character:WaitForChild("Humanoid", 5)
@@ -1002,12 +956,11 @@ local function SetupUtility(Character)
                             task.wait()
                         end
                     end
-                end 
+                end
             end))
         end
     end
 end
-
 -- // Ecco移植: No Jump Cooldown
 local function SetupNoJumpCooldown(Character)
     if not Character then return end
@@ -1022,30 +975,166 @@ local function SetupNoJumpCooldown(Character)
     end))
 end
 
-local function ApplySpoofing(Character)
-    if not Character then return end
-    local Humanoid = Character:WaitForChild("Humanoid", 5)
-    if not Humanoid then return end
-    task.spawn(function()
-        if Config['Spoofing'] and Config['Spoofing']['Avatar Spoofer'] and Config['Spoofing']['Avatar Spoofer']['Enabled'] then
-            local ok, desc = pcall(function()
-                return Players:GetHumanoidDescriptionFromUserId(Config['Spoofing']['Avatar Spoofer']['UserId'])
-            end)
-            if ok and desc then
-                pcall(function() Humanoid:ApplyDescription(desc) end)
+-- ==========================================
+-- 新增/替换的 Spoofing 功能 (Headless & Korblox)
+-- ==========================================
+local HeadlessConnection = nil
+local KorbloxOriginalState = {}
+
+local function ApplyHeadless(character)
+    if HeadlessConnection then
+        HeadlessConnection:Disconnect()
+        HeadlessConnection = nil
+    end
+    local head = character:WaitForChild("Head", 5)
+    if not head then return end
+    
+    local function hideHead()
+        head.LocalTransparencyModifier = 1
+        for _, child in ipairs(head:GetChildren()) do
+            if child:IsA("Decal") then
+                child.Transparency = 1
             end
         end
-        if Config['Spoofing'] and Config['Spoofing']['Headless'] then
-            local Head = Character:WaitForChild("Head", 5)
-            if Head and Head:IsA("MeshPart") then
-                Head.MeshId = "rbxassetid://134082085"
-                Head.TextureID = ""
-            elseif Head then
-                Head.Transparency = 1
+    end
+    
+    hideHead()
+    HeadlessConnection = RunService.RenderStepped:Connect(function()
+        if not character.Parent or not head.Parent then
+            HeadlessConnection:Disconnect()
+            HeadlessConnection = nil
+            return
+        end
+        if Config['Spoofing']['Headless'] then
+            hideHead()
+        else
+            -- 关闭时恢复
+            head.LocalTransparencyModifier = 0
+            for _, child in ipairs(head:GetChildren()) do
+                if child:IsA("Decal") then
+                    child.Transparency = 0
+                end
             end
         end
     end)
 end
+
+local function ApplyKorblox(character)
+    if not character then return end
+    local hum = character:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    
+    if hum.RigType == Enum.HumanoidRigType.R15 then
+        local rf = character:FindFirstChild("RightFoot")
+        local rl = character:FindFirstChild("RightLowerLeg")
+        local ru = character:FindFirstChild("RightUpperLeg")
+        
+        if ru and rl and rf then
+            if Config['Spoofing']['Korblox'] then
+                -- 保存原始状态 (仅保存一次)
+                if not KorbloxOriginalState[character] then
+                    KorbloxOriginalState[character] = {
+                        ruMeshId = ru.MeshId,
+                        ruTextureId = ru.TextureID,
+                        ruColor = ru.Color,
+                        ruTransparency = ru.Transparency,
+                        rlTransparency = rl.Transparency,
+                        rfTransparency = rf.Transparency
+                    }
+                end
+                -- 应用 Korblox
+                rf.Transparency = 1
+                rl.Transparency = 1
+                ru.MeshId = "http://www.roblox.com/asset/?id=902942096"
+                ru.TextureID = "http://roblox.com/asset/?id=902843398"
+                ru.Color = Color3.new(1, 1, 1)
+                ru.Transparency = 0
+            else
+                -- 恢复原始状态
+                local orig = KorbloxOriginalState[character]
+                if orig then
+                    ru.MeshId = orig.ruMeshId
+                    ru.TextureID = orig.ruTextureId
+                    ru.Color = orig.ruColor
+                    ru.Transparency = orig.ruTransparency
+                    rl.Transparency = orig.rlTransparency
+                    rf.Transparency = orig.rfTransparency
+                    KorbloxOriginalState[character] = nil
+                end
+            end
+        end
+    else
+        -- R6 逻辑 (如果需要)
+        local rightLeg = character:FindFirstChild("Right Leg")
+        if rightLeg then
+            if Config['Spoofing']['Korblox'] then
+                -- 保存原始状态
+                if not KorbloxOriginalState[character] then
+                    local mesh = rightLeg:FindFirstChildOfClass("SpecialMesh")
+                    KorbloxOriginalState[character] = {
+                        color = rightLeg.Color,
+                        transparency = rightLeg.Transparency,
+                        meshType = mesh and mesh.MeshType,
+                        meshId = mesh and mesh.MeshId,
+                        textureId = mesh and mesh.TextureId,
+                        scale = mesh and mesh.Scale
+                    }
+                end
+                -- 应用
+                rightLeg.Color = Color3.fromRGB(64, 64, 64)
+                rightLeg.Transparency = 0
+                local mesh = rightLeg:FindFirstChildOfClass("SpecialMesh")
+                if not mesh then
+                    mesh = Instance.new("SpecialMesh")
+                    mesh.Parent = rightLeg
+                end
+                mesh.MeshType = Enum.MeshType.FileMesh
+                mesh.MeshId = "rbxassetid://101851696"
+                mesh.TextureId = "rbxassetid://101851254"
+                mesh.Scale = Vector3.new(1, 1, 1)
+            else
+                -- 恢复
+                local orig = KorbloxOriginalState[character]
+                if orig then
+                    rightLeg.Color = orig.color
+                    rightLeg.Transparency = orig.transparency
+                    local mesh = rightLeg:FindFirstChildOfClass("SpecialMesh")
+                    if mesh then
+                        mesh.MeshType = orig.meshType or Enum.MeshType.Brick
+                        mesh.MeshId = orig.meshId or ""
+                        mesh.TextureId = orig.textureId or ""
+                        mesh.Scale = orig.scale or Vector3.new(1,1,1)
+                    end
+                    KorbloxOriginalState[character] = nil
+                end
+            end
+        end
+    end
+end
+
+local function HandleSpoofing(character)
+    if not character then return end
+    ApplyHeadless(character)
+    ApplyKorblox(character)
+end
+
+-- 监听配置变化以实时生效
+track(ConfigChanged or Instance.new("BindableEvent").Event) -- 占位，实际通过 UI 回调触发
+-- 由于 Config 是 table，我们在 UI 的 SetFunc 中直接调用 HandleSpoofing
+
+if LocalPlayer.Character then
+    WatchCharacterForScripts(LocalPlayer.Character)
+    SetupUtility(LocalPlayer.Character)
+    SetupNoJumpCooldown(LocalPlayer.Character)
+    HandleSpoofing(LocalPlayer.Character)
+end
+track(LocalPlayer.CharacterAdded:Connect(function(char)
+    task.wait(1)
+    WatchCharacterForScripts(char)
+    SetupUtility(char)
+    SetupNoJumpCooldown(char)
+    HandleSpoofing(char)
+end))
 
 -- // Purchase Armor 逻辑
 local ArmorBuying = false
@@ -1090,20 +1179,6 @@ local function PurchaseArmor()
     end
 end
 
-if LocalPlayer.Character then
-    WatchCharacterForScripts(LocalPlayer.Character)
-    SetupUtility(LocalPlayer.Character)
-    SetupNoJumpCooldown(LocalPlayer.Character)
-    ApplySpoofing(LocalPlayer.Character)
-end
-track(LocalPlayer.CharacterAdded:Connect(function(char)
-    task.wait(1)
-    WatchCharacterForScripts(char)
-    SetupUtility(char)
-    SetupNoJumpCooldown(char)
-    ApplySpoofing(char)
-end))
-
 -- ===================== =====================
 -- // ESP 骨骼定义 (R15 / R6 自动检测)
 local R15_BONES={
@@ -1119,7 +1194,6 @@ local R6_BONES={
     {"Torso","Left Leg"},{"Torso","Right Leg"},
 }
 local MAX_BONES=14
-
 local function addESPToPlayer(player)
     if player==LocalPlayer then return end
     local esp={player=player,nameTag=Drawing.new("Text"),line=Drawing.new("Line"),box=Drawing.new("Square"),weaponTag=Drawing.new("Text"),
@@ -1133,7 +1207,6 @@ local function addESPToPlayer(player)
     for i=1,MAX_BONES do local l=Drawing.new("Line"); l.Visible=false; esp.skeleton[i]=l end
     espLabels[player.UserId]=esp
 end
-
 local function removeESPFromPlayer(player)
     local esp=espLabels[player.UserId]
     if esp then
@@ -1143,13 +1216,11 @@ local function removeESPFromPlayer(player)
         espLabels[player.UserId]=nil
     end
 end
-
 local function hideESPDraws(esp)
     esp.nameTag.Visible=false; esp.line.Visible=false; esp.box.Visible=false; esp.weaponTag.Visible=false
     esp.healthBG.Visible=false; esp.healthFG.Visible=false; esp.healthText.Visible=false
     for i=1,MAX_BONES do esp.skeleton[i].Visible=false end
 end
-
 local function refreshESP()
     if Unloaded or PanicMode or not Started or not Config['Visual Awareness']['Enabled'] then
         for _,esp in pairs(espLabels) do hideESPDraws(esp) end
@@ -1163,7 +1234,6 @@ local function refreshESP()
     local skEn=Config['Visual Awareness']['Skeleton']['Enabled']
     local skCol=Config['Visual Awareness']['Skeleton']['Color']
     local skTh=Config['Visual Awareness']['Skeleton']['Thickness']
-    
     for userId,esp in pairs(espLabels) do
         local player=esp.player
         if not player or not player.Parent then
@@ -1185,30 +1255,25 @@ local function refreshESP()
                 local bc=Config['Visual Awareness']['Box']['Color']
                 if isBlacklisted(player) then nc=Config['Visual Awareness']['Blacklist Color']; bc=Config['Visual Awareness']['Blacklist Color']
                 elseif (currentTarget and currentTarget.Parent==character) or (cameraLockPart and cameraLockPart.Parent==character) or (silentAimTarget and silentAimTarget.Parent==character) then nc=Config['Visual Awareness']['Target Color']; bc=Config['Visual Awareness']['Target Color'] end
-                
                 esp.nameTag.Position=Vector2.new(lp.X,lp.Y+15)
                 esp.nameTag.Text=(player.DisplayName and player.DisplayName~="") and player.DisplayName or player.Name
                 esp.nameTag.Color=nc
                 esp.nameTag.Visible=true
-                
                 if boxEn and ho then
                     esp.box.Size=Vector2.new(w,h); esp.box.Position=Vector2.new(lp.X-w/2,hp.Y)
                     esp.box.Thickness=Config['Visual Awareness']['Box']['Thickness']; esp.box.Color=bc; esp.box.Visible=true
                 else esp.box.Visible=false end
-                
                 if wpnEn and ho then
                     local tool=character:FindFirstChildOfClass("Tool")
                     esp.weaponTag.Text=getWeaponDisplayName(tool and tool.Name or nil)
                     esp.weaponTag.Position=Vector2.new(hp.X,hp.Y-18)
                     esp.weaponTag.Visible=true
                 else esp.weaponTag.Visible=false end
-                
                 if lineEn then
                     esp.line.Visible=true; esp.line.Color=Config['Visual Awareness']['Line']['Color']
                     esp.line.Thickness=Config['Visual Awareness']['Line']['Thickness']
                     esp.line.From=Vector2.new(lp.X,lp.Y); esp.line.To=Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y)
                 else esp.line.Visible=false end
-                
                 -- // 血量条绘制
                 if hbEn and ho then
                     local frac=math.clamp(hum.Health/math.max(hum.MaxHealth,1),0,1)
@@ -1227,7 +1292,6 @@ local function refreshESP()
                         esp.healthText.Color=hpCol
                     else esp.healthText.Visible=false end
                 else esp.healthBG.Visible=false; esp.healthFG.Visible=false; esp.healthText.Visible=false end
-                
                 -- // 骨骼绘制 ( R15/R6 自动检测)
                 if skEn then
                     local bones=nil
@@ -1261,7 +1325,6 @@ local function refreshESP()
         else hideESPDraws(esp) end
     end
 end
-
 for _,player in pairs(Players:GetPlayers()) do
     if player~=LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then addESPToPlayer(player) end
     player.CharacterAdded:Connect(function(char) removeESPFromPlayer(player); char:WaitForChild("HumanoidRootPart"); task.wait(.1); if not Unloaded then addESPToPlayer(player) end end)
@@ -1274,13 +1337,12 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 Players.PlayerRemoving:Connect(function(player) removeESPFromPlayer(player) end)
-
 local keybindDisplayObjects={}
 local function updateKeybindDisplay()
     for _,obj in pairs(keybindDisplayObjects) do pcall(function() obj:Remove() end) end
     keybindDisplayObjects={}
     if not Config['Visual Awareness']['Keybind Display'] or Unloaded or PanicMode or not Started then return end
-    local binds={} 
+    local binds={}
     local function addBind(bind,name)
         local key=getBindKey(bind)
         if key and key~='' then
@@ -1298,13 +1360,11 @@ local function updateKeybindDisplay()
     addBind(Config['Keybinds']['Inf Range'],"Inf Range")
     addBind(Config['Keybinds']['ESP'],"ESP")
     addBind(Config['Keybinds']['Purchase Armor'],"Purchase Armor")
-    
     local startY=200
     local title=Drawing.new("Text")
     title.Text="── KEYBINDS ──"; title.Position=Vector2.new(15,startY); title.Size=13
     title.Color=Color3.fromRGB(138,110,255); title.Outline=true; title.Visible=true
     table.insert(keybindDisplayObjects,title)
-    
     for i,bind in ipairs(binds) do
         local keyTxt=Drawing.new("Text")
         keyTxt.Text="["..bind.key.."]"; keyTxt.Position=Vector2.new(15,startY+i*18); keyTxt.Size=12
@@ -1319,8 +1379,7 @@ local function updateKeybindDisplay()
         table.insert(keybindDisplayObjects,nameTxt)
     end
 end
-
-local teleportAngle=0 
+local teleportAngle=0
 local function teleportToFace(player)
     local character=LocalPlayer.Character
     if not character then return end
@@ -1331,7 +1390,6 @@ local function teleportToFace(player)
         hrp.CFrame=tcf*CFrame.new(0,0,-2)
     end
 end
-
 local function updateTeleport(dt)
     if Unloaded or not Started then return end
     if not Config['Teleport']['Enabled'] then return end
@@ -1372,7 +1430,6 @@ local function updateTeleport(dt)
         hrp.CFrame=CFrame.new(tp+Vector3.new(ox,2,oz))
     end
 end
-
 track(RunService.Heartbeat:Connect(function(dt)
     if Unloaded or not Started then return end
     if Config['Super Jump']['Enabled'] then
@@ -1391,7 +1448,6 @@ track(RunService.Heartbeat:Connect(function(dt)
     end
     updateTeleport(dt)
 end))
-
 track(RunService.RenderStepped:Connect(function()
     if Unloaded or not Started then return end
     if currentTarget then
@@ -1423,7 +1479,6 @@ track(RunService.RenderStepped:Connect(function()
     if Config['Silent Aim']['Enabled'] and silentAimActive then silentAimTarget=getTargetForSilentAim() else silentAimTarget=nil; saStickyTarget=nil end
     if Config['Camera Lock']['Enabled'] and cameraLockActive then applyCameraLock() else cameraLockPart=nil; stickyTarget=nil end
 end))
-
 track(RunService.RenderStepped:Connect(function()
     if Unloaded or not Started then return end
     if not Config['Rapid Fire']['Enabled'] or not rapidFireActive then return end
@@ -1437,7 +1492,6 @@ track(RunService.RenderStepped:Connect(function()
     end
     tool:Activate(); lastRapidShot=tick()
 end))
-
 track(RunService.RenderStepped:Connect(function()
     if Unloaded or not Started then return end
     if not Config['Infinite Range']['Enabled'] or not infRangeActive then return end
@@ -1450,7 +1504,6 @@ track(RunService.RenderStepped:Connect(function()
     for _,rv in ipairs(irState.vals) do pcall(function() rv.Value=maxR end) end
     for _,a in ipairs(irState.attrInsts) do pcall(function() a.inst:SetAttribute(a.name,maxR) end) end
 end))
-
 -- // Ecco移植: Delay Changer / No Cooldown
 track(RunService.RenderStepped:Connect(function()
     if Unloaded or not Started then return end
@@ -1474,7 +1527,6 @@ track(RunService.RenderStepped:Connect(function()
         end
     end
 end))
-
 track(UserInputService.InputBegan:Connect(function(input,processed)
     if Unloaded or not Started then return end
     if WaitingForKey or BindConsumed then return end
@@ -1517,7 +1569,6 @@ track(UserInputService.InputBegan:Connect(function(input,processed)
     if matchInput(Config['Keybinds']['Purchase Armor'],input) then PurchaseArmor() end
     if input.UserInputType==Enum.UserInputType.MouseButton1 then rapidFireActive=true end
 end))
-
 track(UserInputService.InputEnded:Connect(function(input,processed)
     if Unloaded or not Started then return end
     if matchInput(Config['Keybinds']['Target Lock'],input) and Config['Keybinds']['Target Lock']['Mode']=='Hold' then isLocking=false; currentTarget=nil; lastVisibleTarget=nil end
@@ -1527,9 +1578,7 @@ track(UserInputService.InputEnded:Connect(function(input,processed)
     if matchInput(Config['Keybinds']['Rage Mode'],input) and Config['Keybinds']['Rage Mode']['Mode']=='Hold' then rageActive=false end
     if input.UserInputType==Enum.UserInputType.MouseButton1 then rapidFireActive=false end
 end))
-
 track(LocalPlayer.CharacterAdded:Connect(function() task.wait(1) end))
-
 local UI={
     BG=Color3.fromRGB(10,10,12),Top=Color3.fromRGB(14,14,17),Panel=Color3.fromRGB(18,18,22),Panel2=Color3.fromRGB(24,24,29),
     Stroke=Color3.fromRGB(42,42,50),Text=Color3.fromRGB(200,200,210),TextDim=Color3.fromRGB(110,110,120),
@@ -1544,18 +1593,15 @@ local guiParented=false
 if not guiParented and gethui then pcall(function() ScreenGui.Parent=gethui() guiParented=true end) end
 if not guiParented then pcall(function() ScreenGui.Parent=game:GetService("CoreGui") guiParented=true end) end
 if not guiParented then pcall(function() ScreenGui.Parent=LocalPlayer:WaitForChild("PlayerGui") guiParented=true end) end
-
 local hudGui=Instance.new("ScreenGui")
 pcall(function() hudGui.Parent=game:GetService("CoreGui") end)
 if not hudGui.Parent then pcall(function() hudGui.Parent=LocalPlayer:WaitForChild("PlayerGui") end) end
-
 do --主框架
     MainFrame=Instance.new("Frame")
     MainFrame.Size=UDim2.new(0,720,0,500); MainFrame.Position=UDim2.new(0.5,-360,0.5,-250)
     MainFrame.BackgroundColor3=UI.BG; MainFrame.BorderSizePixel=0
     MainFrame.Visible=false; MainFrame.ClipsDescendants=true; MainFrame.Parent=ScreenGui
     local MainStroke=Instance.new("UIStroke"); MainStroke.Color=UI.Stroke; MainStroke.Thickness=1; MainStroke.Parent=MainFrame
-    
     local Dragging,DragInput,MousePos,FramePos
     UserInputService.InputChanged:Connect(function(Input) 
         if Input==DragInput and Dragging then
@@ -1563,7 +1609,6 @@ do --主框架
             MainFrame.Position=UDim2.new(FramePos.X.Scale,FramePos.X.Offset+D.X,FramePos.Y.Scale,FramePos.Y.Offset+D.Y)
         end
     end)
-    
     TopBar=Instance.new("Frame"); TopBar.Size=UDim2.new(1,0,0,30); TopBar.BackgroundColor3=UI.Top; TopBar.BorderSizePixel=0; TopBar.Parent=MainFrame
     local tbLine=Instance.new("Frame"); tbLine.Size=UDim2.new(1,0,0,1); tbLine.Position=UDim2.new(0,0,1,0); tbLine.BackgroundColor3=UI.Stroke; tbLine.BorderSizePixel=0; tbLine.Parent=TopBar
     TopBar.InputBegan:Connect(function(Input)
@@ -1573,37 +1618,29 @@ do --主框架
         end
     end)
     TopBar.InputChanged:Connect(function(Input) if Input.UserInputType==Enum.UserInputType.MouseMovement then DragInput=Input end end)
-    
     local TitleLbl=Instance.new("TextLabel"); TitleLbl.Size=UDim2.new(0,200,1,0); TitleLbl.Position=UDim2.new(0,10,0,0)
     TitleLbl.BackgroundTransparency=1; TitleLbl.RichText=true; TitleLbl.Font=Enum.Font.Code; TitleLbl.TextSize=14
     TitleLbl.TextXAlignment=Enum.TextXAlignment.Left
     TitleLbl.Text='<font color="rgb(138,110,255)">hate</font> <font color="rgb(110,110,120)">client</font>'; TitleLbl.Parent=TopBar
-    
     local RightLbl=Instance.new("TextLabel"); RightLbl.Size=UDim2.new(0,120,1,0); RightLbl.Position=UDim2.new(1,-130,0,0)
     RightLbl.BackgroundTransparency=1; RightLbl.Text="neverlose"; RightLbl.TextColor3=UI.TextDim; RightLbl.Font=Enum.Font.Code; RightLbl.TextSize=11
     RightLbl.TextXAlignment=Enum.TextXAlignment.Right; RightLbl.Parent=TopBar
-    
     TabBar=Instance.new("Frame"); TabBar.Size=UDim2.new(0,400,1,0); TabBar.Position=UDim2.new(0,120,0,0)
     TabBar.BackgroundTransparency=1; TabBar.Parent=TopBar
     local TabLL=Instance.new("UIListLayout"); TabLL.FillDirection=Enum.FillDirection.Horizontal; TabLL.Padding=UDim.new(0,2); TabLL.Parent=TabBar
-    
     local BottomBar=Instance.new("Frame"); BottomBar.Size=UDim2.new(1,0,0,22); BottomBar.Position=UDim2.new(0,0,1,-22)
     BottomBar.BackgroundColor3=UI.Top; BottomBar.BorderSizePixel=0; BottomBar.Parent=MainFrame
     local bbLine=Instance.new("Frame"); bbLine.Size=UDim2.new(1,0,0,1); bbLine.Position=UDim2.new(0,0,0,-1); bbLine.BackgroundColor3=UI.Stroke; bbLine.BorderSizePixel=0; bbLine.Parent=BottomBar
-    
     local DateLbl=Instance.new("TextLabel"); DateLbl.Size=UDim2.new(0.5,-10,1,0); DateLbl.Position=UDim2.new(0,10,0,0)
     DateLbl.BackgroundTransparency=1; DateLbl.Text=os.date("%b %d %Y"); DateLbl.TextColor3=UI.TextDim; DateLbl.Font=Enum.Font.Code; DateLbl.TextSize=11
     DateLbl.TextXAlignment=Enum.TextXAlignment.Left; DateLbl.Parent=BottomBar
-    
     local UserLbl=Instance.new("TextLabel"); UserLbl.Size=UDim2.new(0.5,-10,1,0); UserLbl.Position=UDim2.new(0.5,0,0,0)
     UserLbl.BackgroundTransparency=1; UserLbl.RichText=true; UserLbl.Font=Enum.Font.Code; UserLbl.TextSize=11
     UserLbl.TextXAlignment=Enum.TextXAlignment.Right
     UserLbl.Text='active user: <font color="rgb(138,110,255)">'..LocalPlayer.Name..'</font>'; UserLbl.Parent=BottomBar
-    
     ContentFrame=Instance.new("Frame"); ContentFrame.Size=UDim2.new(1,0,1,-52); ContentFrame.Position=UDim2.new(0,0,0,30)
     ContentFrame.BackgroundTransparency=1; ContentFrame.Parent=MainFrame
 end --主框架
-
 local function addStroke(obj,color) local s=Instance.new("UIStroke"); s.Color=color or UI.Stroke; s.Thickness=1; s.Parent=obj return s end
 local function CreatePage()
     local page=Instance.new("Frame"); page.Size=UDim2.new(1,-16,1,-16); page.Position=UDim2.new(0,8,0,8)
@@ -1618,7 +1655,6 @@ local function CreatePage()
     local l2=Instance.new("UIListLayout"); l2.Padding=UDim.new(0,10); l2.Parent=colR
     return page,colL,colR
 end
-
 local Pages={}
 do
     local a,b,c=CreatePage(); Pages.Aim={root=a,L=b,R=c}
@@ -1627,7 +1663,6 @@ do
     a,b,c=CreatePage(); Pages.Players={root=a,L=b,R=c}
     a,b,c=CreatePage(); Pages.Settings={root=a,L=b,R=c}
 end
-
 local TabButtons={}
 local function applyTabVisual(pageKey)
     for k,p in pairs(Pages) do p.root.Visible=(k==pageKey) end
@@ -1638,7 +1673,6 @@ local function applyTabVisual(pageKey)
         b.btn.BackgroundTransparency=(k==pageKey) and 0 or 1
     end
 end
-
 local function CreateSidebarTab(pageKey,langKey)
     local btn=Instance.new("TextButton"); btn.Size=UDim2.new(0,72,1,0); btn.Text=""; btn.AutoButtonColor=false; btn.BorderSizePixel=0; btn.Parent=TabBar
     local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(1,0,1,0); lbl.BackgroundTransparency=1; lbl.Font=Enum.Font.Code; lbl.TextSize=12
@@ -1649,14 +1683,12 @@ local function CreateSidebarTab(pageKey,langKey)
     TabButtons[pageKey]={btn=btn,lbl=lbl,underline=underline}
     btn.MouseButton1Click:Connect(function() applyTabVisual(pageKey) end)
 end
-
 CreateSidebarTab("Aim","TabAim")
 CreateSidebarTab("Visuals","TabVisuals")
 CreateSidebarTab("Misc","TabMisc")
 CreateSidebarTab("Players","TabPlayers")
 CreateSidebarTab("Settings","TabSettings")
 applyTabVisual("Aim")
-
 local GuiOpen=false
 local function closeDropdown()
     if DropdownPopup then
@@ -1669,7 +1701,6 @@ local function closeColorPopup()
     if ColorPopup then pcall(function() ColorPopup:Destroy() end) ColorPopup=nil end
     if ColorCatcher then pcall(function() ColorCatcher:Destroy() end) ColorCatcher=nil end
 end
-
 local function openMenu()
     GuiOpen=true; MainFrame.Visible=true
     pcall(function() UserInputService.MouseBehavior=Enum.MouseBehavior.Default; UserInputService.MouseIconEnabled=true end)
@@ -1683,7 +1714,6 @@ local function closeMenu()
     pcall(function() UserInputService.MouseBehavior=Enum.MouseBehavior.Default; UserInputService.MouseIconEnabled=true end)
 end
 local function toggleMenu() if GuiOpen then closeMenu() else openMenu() end end
-
 local function UnloadScript()
     Unloaded=true
     local hum=LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -1707,15 +1737,10 @@ local function UnloadScript()
     pcall(function() fovCircle:Remove() end); pcall(function() saFovCircle:Remove() end); pcall(function() lockLine:Remove() end)
     pcall(function() ScreenGui:Destroy() end); pcall(function() hudGui:Destroy() end)
     print("hate unloaded")
-    
-    -- ★ 新增：清理全局标记，允许下次重新加载
     genv.__HateCC_Loaded = false
     genv.__HateCC_Unload = nil
 end
-
--- ★ 新增：将卸载函数暴露给加载器，以便加载器在重新加载前清理旧代码
 genv.__HateCC_Unload = UnloadScript
-
 do --启动器
     Launcher=Instance.new("Frame")
     Launcher.Size=UDim2.new(0,470,0,300); Launcher.Position=UDim2.new(0.5,-235,0.5,-150)
@@ -1727,11 +1752,9 @@ do --启动器
     lTitle.BackgroundTransparency=1; lTitle.RichText=true; lTitle.Font=Enum.Font.Code; lTitle.TextSize=13
     lTitle.TextXAlignment=Enum.TextXAlignment.Left
     lTitle.Text='<font color="rgb(138,110,255)">hate</font> <font color="rgb(110,110,120)">client</font>'; lTitle.Parent=lTop
-    
     local lLeft=Instance.new("Frame"); lLeft.Size=UDim2.new(0,140,1,-60); lLeft.Position=UDim2.new(0,8,0,34)
     lLeft.BackgroundColor3=UI.BG; lLeft.BorderSizePixel=0; lLeft.Parent=Launcher; addStroke(lLeft)
     local lList=Instance.new("UIListLayout"); lList.Padding=UDim.new(0,2); lList.Parent=lLeft
-    
     local function launcherEntry(langKey,active,cb)
         local btn=Instance.new("TextButton"); btn.Size=UDim2.new(1,-8,0,26); btn.Text=""; btn.AutoButtonColor=false; btn.BorderSizePixel=0; btn.Parent=lLeft
         local bar=Instance.new("Frame"); bar.Size=UDim2.new(0,2,0,16); bar.Position=UDim2.new(0,4,0.5,-8); bar.BackgroundColor3=UI.Accent; bar.BorderSizePixel=0; bar.Visible=active; bar.Parent=btn
@@ -1741,20 +1764,17 @@ do --启动器
         registerLang(lbl,langKey)
         btn.MouseButton1Click:Connect(cb)
     end
-    
     local lRight=Instance.new("Frame"); lRight.Size=UDim2.new(1,-164,1,-60); lRight.Position=UDim2.new(0,156,0,34)
     lRight.BackgroundColor3=UI.BG; lRight.BorderSizePixel=0; lRight.Parent=Launcher; addStroke(lRight)
     local lHead=Instance.new("Frame"); lHead.Size=UDim2.new(1,-8,0,22); lHead.Position=UDim2.new(0,4,0,4); lHead.BackgroundColor3=UI.Panel; lHead.BorderSizePixel=0; lHead.Parent=lRight; addStroke(lHead)
     local lHeadLbl=Instance.new("TextLabel"); lHeadLbl.Size=UDim2.new(1,-10,1,0); lHeadLbl.Position=UDim2.new(0,8,0,0)
     lHeadLbl.BackgroundTransparency=1; lHeadLbl.Font=Enum.Font.Code; lHeadLbl.TextSize=11; lHeadLbl.TextColor3=UI.TextDim
     lHeadLbl.TextXAlignment=Enum.TextXAlignment.Left; lHeadLbl.Parent=lHead; registerLang(lHeadLbl,"Details")
-    
     local lBig=Instance.new("TextLabel"); lBig.Size=UDim2.new(1,0,0,30); lBig.Position=UDim2.new(0,0,0,44)
     lBig.BackgroundTransparency=1; lBig.Text="hate"; lBig.TextColor3=UI.Accent; lBig.Font=Enum.Font.Code; lBig.TextSize=24; lBig.Parent=lRight
     table.insert(AccentElements,lBig)
     local lSub=Instance.new("TextLabel"); lSub.Size=UDim2.new(1,0,0,14); lSub.Position=UDim2.new(0,0,0,76)
     lSub.BackgroundTransparency=1; lSub.Text="neverlose"; lSub.TextColor3=UI.TextDim; lSub.Font=Enum.Font.Code; lSub.TextSize=11; lSub.Parent=lRight
-    
     local function launcherButton(langKey,y,accent,cb)
         local btn=Instance.new("TextButton"); btn.Size=UDim2.new(0,200,0,26); btn.Position=UDim2.new(0.5,-100,0,y)
         btn.BackgroundColor3=accent and UI.Accent or UI.Panel2; btn.BorderSizePixel=0; btn.Font=Enum.Font.Code; btn.TextSize=12
@@ -1763,7 +1783,6 @@ do --启动器
         registerLang(btn,langKey)
         btn.MouseButton1Click:Connect(cb)
     end
-    
     local function doStart()
         Started=true
         Launcher.Visible=false
@@ -1774,7 +1793,6 @@ do --启动器
     launcherEntry("Exit",false,function() UnloadScript() end)
     launcherButton("Start",110,true,doStart)
     launcherButton("Exit",146,false,function() UnloadScript() end)
-    
     local lBottom=Instance.new("Frame"); lBottom.Size=UDim2.new(1,0,0,22); lBottom.Position=UDim2.new(0,0,1,-22)
     lBottom.BackgroundColor3=UI.Top; lBottom.BorderSizePixel=0; lBottom.Parent=Launcher
     local lBottomLine=Instance.new("Frame"); lBottomLine.Size=UDim2.new(1,0,0,1); lBottomLine.Position=UDim2.new(0,0,0,-1); lBottomLine.BackgroundColor3=UI.Stroke; lBottomLine.BorderSizePixel=0; lBottomLine.Parent=lBottom 
@@ -1786,11 +1804,9 @@ do --启动器
     lUser.TextXAlignment=Enum.TextXAlignment.Right
     lUser.Text='active user: <font color="rgb(138,110,255)">'..LocalPlayer.Name..'</font>'; lUser.Parent=lBottom
 end --启动器
-
 local UIComponents={}
 local function registerComponent(fn) table.insert(UIComponents,fn) end
 local function refreshAllComponents() for _,u in ipairs(UIComponents) do pcall(u) end end
-
 local function CreateSection(col,langKey)
     local wrap=Instance.new("Frame"); wrap.BackgroundTransparency=1; wrap.AutomaticSize=Enum.AutomaticSize.Y; wrap.Size=UDim2.new(1,0,0,0); wrap.Parent=col
     local lay=Instance.new("UIListLayout"); lay.Padding=UDim.new(0,4); lay.Parent=wrap
@@ -1803,7 +1819,6 @@ local function CreateSection(col,langKey)
     local bp=Instance.new("UIPadding"); bp.PaddingTop=UDim.new(0,6); bp.PaddingBottom=UDim.new(0,6); bp.PaddingLeft=UDim.new(0,6); bp.PaddingRight=UDim.new(0,6); bp.Parent=box
     return box
 end
-
 local function CreateToggle(parent,langKey,GetFunc,SetFunc)
     local row=Instance.new("TextButton"); row.Size=UDim2.new(1,0,0,22); row.BackgroundTransparency=1; row.Text=""; row.AutoButtonColor=false; row.Parent=parent
     local sq=Instance.new("Frame"); sq.Size=UDim2.new(0,10,0,10); sq.Position=UDim2.new(0,4,0.5,-5); sq.BackgroundColor3=UI.ToggleOff; sq.BorderSizePixel=0; sq.Parent=row
@@ -1820,7 +1835,6 @@ local function CreateToggle(parent,langKey,GetFunc,SetFunc)
     row.MouseButton1Click:Connect(function() SetFunc(not GetFunc()); Update() end)
     return row,lbl
 end
-
 local function CreateSlider(parent,langKey,Min,Max,GetFunc,SetFunc)
     local row=Instance.new("Frame"); row.Size=UDim2.new(1,0,0,32); row.BackgroundTransparency=1; row.Parent=parent
     local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(0.6,-4,0,14); lbl.Position=UDim2.new(0,4,0,2)
@@ -1852,10 +1866,9 @@ local function CreateSlider(parent,langKey,Min,Max,GetFunc,SetFunc)
         end
     end)
 end
-
 local function openDropdown(anchorBtn,options,onSet)
     closeDropdown()
-    local catcher=Instance.new("TextButton"); catcher.Size=UDim2.new(1,0,1,0); catcher.BackgroundTransparency=1; catcher.Text=""; catcher.ZIndex=80; catcher.Parent=ScreenGui
+    local catcher=Instance.new("TextButton"); catcher.Size=UDim2.new(1,0,1,0); catcher.BackgroundTransparency=1; catcher.Text=" "; catcher.ZIndex=80; catcher.Parent=ScreenGui
     local frame=Instance.new("Frame"); frame.Size=UDim2.new(0,math.max(anchorBtn.AbsoluteSize.X,120),0,#options*20+8)
     frame.Position=UDim2.fromOffset(anchorBtn.AbsolutePosition.X,anchorBtn.AbsolutePosition.Y+anchorBtn.AbsoluteSize.Y+2)
     frame.BackgroundColor3=UI.Top; frame.BorderSizePixel=0; frame.ZIndex=90; frame.Parent=ScreenGui; addStroke(frame,UI.Accent)
@@ -1863,20 +1876,19 @@ local function openDropdown(anchorBtn,options,onSet)
     local pad=Instance.new("UIPadding"); pad.PaddingTop=UDim.new(0,3); pad.PaddingBottom=UDim.new(0,3); pad.PaddingLeft=UDim.new(0,3); pad.PaddingRight=UDim.new(0,3); pad.Parent=frame
     for _,opt in ipairs(options) do
         local ob=Instance.new("TextButton"); ob.Size=UDim2.new(1,0,0,18); ob.BackgroundColor3=UI.Panel; ob.BorderSizePixel=0
-        ob.Text="     "..opt; ob.TextXAlignment=Enum.TextXAlignment.Left; ob.TextColor3=UI.Text; ob.Font=Enum.Font.Code; ob.TextSize=11; ob.ZIndex=91; ob.Parent=frame
+        ob.Text="      "..opt; ob.TextXAlignment=Enum.TextXAlignment.Left; ob.TextColor3=UI.Text; ob.Font=Enum.Font.Code; ob.TextSize=11; ob.ZIndex=91; ob.Parent=frame
         ob.MouseButton1Click:Connect(function() onSet(opt); closeDropdown() end)
     end
     catcher.MouseButton1Click:Connect(closeDropdown)
     DropdownPopup={frame=frame,catcher=catcher}
 end
-
 local function CreateDropdown(parent,langKey,Options,GetFunc,SetFunc)
     local row=Instance.new("Frame"); row.Size=UDim2.new(1,0,0,24); row.BackgroundTransparency=1; row.Parent=parent
     local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(0.5,-4,1,0); lbl.Position=UDim2.new(0,4,0,0)
     lbl.BackgroundTransparency=1; lbl.TextXAlignment=Enum.TextXAlignment.Left; lbl.TextColor3=UI.TextDim; lbl.Font=Enum.Font.Code; lbl.TextSize=12; lbl.Parent=row
     registerLang(lbl,langKey)
     local btn=Instance.new("TextButton"); btn.Size=UDim2.new(0.5,0,0,20); btn.Position=UDim2.new(0.5,0,0.5,-10)
-    btn.BackgroundColor3=UI.Panel2; btn.BorderSizePixel=0; btn.Text=""; btn.AutoButtonColor=false; btn.Parent=row; addStroke(btn)
+    btn.BackgroundColor3=UI.Panel2; btn.BorderSizePixel=0; btn.Text=" "; btn.AutoButtonColor=false; btn.Parent=row; addStroke(btn)
     local val=Instance.new("TextLabel"); val.Size=UDim2.new(1,-18,1,0); val.Position=UDim2.new(0,6,0,0)
     val.BackgroundTransparency=1; val.TextXAlignment=Enum.TextXAlignment.Left; val.TextColor3=UI.Text; val.Font=Enum.Font.Code; val.TextSize=11; val.Parent=btn
     local arrow=Instance.new("TextLabel"); arrow.Size=UDim2.new(0,14,1,0); arrow.Position=UDim2.new(1,-14,0,0)
@@ -1886,14 +1898,13 @@ local function CreateDropdown(parent,langKey,Options,GetFunc,SetFunc)
     Update(); registerComponent(Update)
     btn.MouseButton1Click:Connect(function() openDropdown(btn,Options,function(opt) SetFunc(opt); Update() end) end)
 end
-
 local function CreateDynamicDropdown(parent,langKey,GetOptions,GetFunc,SetFunc)
     local row=Instance.new("Frame"); row.Size=UDim2.new(1,0,0,24); row.BackgroundTransparency=1; row.Parent=parent
     local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(0.5,-4,1,0); lbl.Position=UDim2.new(0,4,0,0)
     lbl.BackgroundTransparency=1; lbl.TextXAlignment=Enum.TextXAlignment.Left; lbl.TextColor3=UI.TextDim; lbl.Font=Enum.Font.Code; lbl.TextSize=12; lbl.Parent=row
     registerLang(lbl,langKey)
     local btn=Instance.new("TextButton"); btn.Size=UDim2.new(0.5,0,0,20); btn.Position=UDim2.new(0.5,0,0.5,-10)
-    btn.BackgroundColor3=UI.Panel2; btn.BorderSizePixel=0; btn.Text=""; btn.AutoButtonColor=false; btn.Parent=row; addStroke(btn)
+    btn.BackgroundColor3=UI.Panel2; btn.BorderSizePixel=0; btn.Text=" "; btn.AutoButtonColor=false; btn.Parent=row; addStroke(btn)
     local val=Instance.new("TextLabel"); val.Size=UDim2.new(1,-18,1,0); val.Position=UDim2.new(0,6,0,0)
     val.BackgroundTransparency=1; val.TextXAlignment=Enum.TextXAlignment.Left; val.TextColor3=UI.Text; val.Font=Enum.Font.Code; val.TextSize=11; val.Parent=btn
     local arrow=Instance.new("TextLabel"); arrow.Size=UDim2.new(0,14,1,0); arrow.Position=UDim2.new(1,-14,0,0)
@@ -1903,7 +1914,6 @@ local function CreateDynamicDropdown(parent,langKey,GetOptions,GetFunc,SetFunc)
     Update(); registerComponent(Update)
     btn.MouseButton1Click:Connect(function() openDropdown(btn,GetOptions(),function(opt) SetFunc(opt); Update() end) end)
 end
-
 local Palette={Color3.fromRGB(138,110,255),Color3.fromRGB(50,205,50),Color3.fromRGB(0,150,255),Color3.fromRGB(255,255,0),Color3.fromRGB(255,0,255),Color3.fromRGB(0,255,255),Color3.fromRGB(255,255,255),Color3.fromRGB(255,128,0),Color3.fromRGB(255,45,85),Color3.fromRGB(90,143,255)}
 local function CreateColorPicker(parent,langKey,GetFunc,SetFunc)
     local row=Instance.new("Frame"); row.Size=UDim2.new(1,0,0,22); row.BackgroundTransparency=1; row.Parent=parent
@@ -1913,14 +1923,13 @@ local function CreateColorPicker(parent,langKey,GetFunc,SetFunc)
     local holder=Instance.new("Frame"); holder.Size=UDim2.new(0,149,0,12); holder.Position=UDim2.new(1,-149,0.5,-6); holder.BackgroundTransparency=1; holder.Parent=row
     local hl=Instance.new("UIListLayout"); hl.FillDirection=Enum.FillDirection.Horizontal; hl.Padding=UDim.new(0,3); hl.Parent=holder
     for _,color in ipairs(Palette) do
-        local sw=Instance.new("TextButton"); sw.Size=UDim2.new(0,12,0,12); sw.BackgroundColor3=color; sw.BorderSizePixel=0; sw.Text=""; sw.AutoButtonColor=false; sw.Parent=holder
+        local sw=Instance.new("TextButton"); sw.Size=UDim2.new(0,12,0,12); sw.BackgroundColor3=color; sw.BorderSizePixel=0; sw.Text=" "; sw.AutoButtonColor=false; sw.Parent=holder
         sw.MouseButton1Click:Connect(function() SetFunc(color) end)
     end
 end
-
 local function openColorPopup(titleKey,entries,pos)
     closeColorPopup()
-    local catcher=Instance.new("TextButton"); catcher.Size=UDim2.new(1,0,1,0); catcher.BackgroundTransparency=1; catcher.Text=""; catcher.ZIndex=95; catcher.Parent=ScreenGui
+    local catcher=Instance.new("TextButton"); catcher.Size=UDim2.new(1,0,1,0); catcher.BackgroundTransparency=1; catcher.Text=" "; catcher.ZIndex=95; catcher.Parent=ScreenGui
     local popup=Instance.new("Frame")
     local h=34+#entries*24
     popup.Size=UDim2.new(0,330,0,h)
@@ -1935,14 +1944,13 @@ local function openColorPopup(titleKey,entries,pos)
         local holder=Instance.new("Frame"); holder.Size=UDim2.new(0,150,0,12); holder.Position=UDim2.new(1,-150,0.5,-6); holder.BackgroundTransparency=1; holder.ZIndex=101; holder.Parent=row
         local hl=Instance.new("UIListLayout"); hl.FillDirection=Enum.FillDirection.Horizontal; hl.Padding=UDim.new(0,3); hl.Parent=holder
         for _,color in ipairs(Palette) do
-            local sw=Instance.new("TextButton"); sw.Size=UDim2.new(0,12,0,12); sw.BackgroundColor3=color; sw.BorderSizePixel=0; sw.Text=""; sw.AutoButtonColor=false; sw.ZIndex=102; sw.Parent=holder
+            local sw=Instance.new("TextButton"); sw.Size=UDim2.new(0,12,0,12); sw.BackgroundColor3=color; sw.BorderSizePixel=0; sw.Text=" "; sw.AutoButtonColor=false; sw.ZIndex=102; sw.Parent=holder
             sw.MouseButton1Click:Connect(function() entry[3](color) end)
         end
     end
     catcher.MouseButton1Click:Connect(closeColorPopup)
     ColorPopup=popup; ColorCatcher=catcher
 end
-
 local function CreateColorPopupButton(parent,langKey,entries)
     local btn=Instance.new("TextButton"); btn.Size=UDim2.new(1,0,0,24); btn.BackgroundColor3=UI.Panel2; btn.BorderSizePixel=0; btn.Text=""; btn.AutoButtonColor=false; btn.Parent=parent; addStroke(btn)
     local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(1,-24,1,0); lbl.Position=UDim2.new(0,8,0,0)
@@ -1953,7 +1961,6 @@ local function CreateColorPopupButton(parent,langKey,entries)
     btn.MouseButton1Click:Connect(function() openColorPopup(langKey,entries,UserInputService:GetMouseLocation()) end)
     return btn
 end
-
 local function CreateWeaponBox(parent,langKey,GetFunc,SetFunc)
     local row=Instance.new("Frame"); row.Size=UDim2.new(1,0,0,40); row.BackgroundTransparency=1; row.Parent=parent
     local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(1,0,0,14); lbl.Position=UDim2.new(0,4,0,0)
@@ -1969,7 +1976,6 @@ local function CreateWeaponBox(parent,langKey,GetFunc,SetFunc)
         SetFunc(parts); box.Text=table.concat(parts,", ")
     end)
 end
-
 local function showKeybindPopup(bindTable,pos)
     if KeybindPopup then pcall(function() KeybindPopup:Destroy() end); KeybindPopup=nil end
     local popup=Instance.new("Frame")
@@ -1982,7 +1988,6 @@ local function showKeybindPopup(bindTable,pos)
     title.BackgroundTransparency=1; title.Text=T("Keybind"); title.TextColor3=UI.Accent
     title.Font=Enum.Font.Code; title.TextSize=12; title.TextXAlignment=Enum.TextXAlignment.Left; title.ZIndex=101; title.Parent=popup
     table.insert(AccentElements,title)
-    
     local keyBtn=Instance.new("TextButton")
     keyBtn.Size=UDim2.new(1,-16,0,24); keyBtn.Position=UDim2.new(0,8,0,28)
     keyBtn.BackgroundColor3=UI.Panel2; keyBtn.BorderSizePixel=0
@@ -1992,7 +1997,6 @@ local function showKeybindPopup(bindTable,pos)
         WaitingForKey={bindTable=bindTable,label=keyBtn}
         keyBtn.Text=T("PressKey")
     end)
-    
     local yOff=58
     if bindTable.Mode~=nil then
         local modeBtn=Instance.new("TextButton")
@@ -2027,11 +2031,9 @@ local function showKeybindPopup(bindTable,pos)
     end
     KeybindPopup=popup
 end
-
 local function attachKeybind(btn,bindTable)
     btn.MouseButton2Click:Connect(function() showKeybindPopup(bindTable,UserInputService:GetMouseLocation()) end)
 end
-
 local function CreateKeybindRow(parent,langKey,bindTable)
     local row=Instance.new("TextButton"); row.Size=UDim2.new(1,0,0,24); row.BackgroundTransparency=1; row.Text=""; row.AutoButtonColor=false; row.Parent=parent
     local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(1,-90,1,0); lbl.Position=UDim2.new(0,4,0,0)
@@ -2048,7 +2050,6 @@ local function CreateKeybindRow(parent,langKey,bindTable)
     Update(); registerComponent(Update)
     row.MouseButton1Click:Connect(function() showKeybindPopup(bindTable,UserInputService:GetMouseLocation()) end)
 end
-
 track(UserInputService.InputBegan:Connect(function(input)
     if WaitingForKey and not isTyping() then
         local keyName=nil
@@ -2067,7 +2068,6 @@ track(UserInputService.InputBegan:Connect(function(input)
         end
     end
 end))
-
 do --AIM页
     local saBox=CreateSection(Pages.Aim.L,"SilentAim")
     local saBtn=CreateToggle(saBox,"SilentAim",function() return Config['Silent Aim']['Enabled'] end,function(v) Config['Silent Aim']['Enabled']=v end)
@@ -2078,26 +2078,22 @@ do --AIM页
     CreateSlider(saBox,"PredX",0,100,function() return math.floor(Config['Silent Aim']['Prediction']['X']*100) end,function(v) Config['Silent Aim']['Prediction']['X']=v/100 end)
     CreateSlider(saBox,"PredY",0,100,function() return math.floor(Config['Silent Aim']['Prediction']['Y']*100) end,function(v) Config['Silent Aim']['Prediction']['Y']=v/100 end)
     CreateSlider(saBox,"PredZ",0,100,function() return math.floor(Config['Silent Aim']['Prediction']['Z']*100) end,function(v) Config['Silent Aim']['Prediction']['Z']=v/100 end)
-    
     local safBox=CreateSection(Pages.Aim.L,"SAFOV")
     CreateToggle(safBox,"SAFOVEnabled",function() return Config['Silent Aim FOV']['Enabled'] end,function(v) Config['Silent Aim FOV']['Enabled']=v end)
     CreateToggle(safBox,"SAFOVVisible",function() return Config['Silent Aim FOV']['Visible'] end,function(v) Config['Silent Aim FOV']['Visible']=v end)
     CreateSlider(safBox,"SAFOVSize",50,1000,function() return math.floor(Config['Silent Aim FOV']['Size'].X) end,function(v) Config['Silent Aim FOV']['Size']=Vector2.new(v,v) end)
     CreateSlider(safBox,"SAFOVThickness",1,10,function() return Config['Silent Aim FOV']['Thickness'] end,function(v) Config['Silent Aim FOV']['Thickness']=v end)
     CreateColorPicker(safBox,"SAFOVColor",function() return Config['Silent Aim FOV']['Color'] end,function(v) Config['Silent Aim FOV']['Color']=v end)
-    
     local tbBox=CreateSection(Pages.Aim.L,"TriggerBot")
     local tbBtn=CreateToggle(tbBox,"TriggerBot",function() return Config['Trigger Bot']['Enabled'] end,function(v) Config['Trigger Bot']['Enabled']=v end)
     attachKeybind(tbBtn,Config['Keybinds']['Trigger Bot'])
     CreateSlider(tbBox,"TriggerDelay",0,1000,function() return math.floor(Config['Trigger Bot']['Delay']*1000) end,function(v) Config['Trigger Bot']['Delay']=v/1000 end)
     CreateToggle(tbBox,"SpecificWeapons",function() return Config['Trigger Bot']['Specific Weapons']['Enabled'] end,function(v) Config['Trigger Bot']['Specific Weapons']['Enabled']=v end)
     CreateWeaponBox(tbBox,"WeaponList",function() return Config['Trigger Bot']['Specific Weapons']['Weapons'] end,function(v) Config['Trigger Bot']['Specific Weapons']['Weapons']=v end)
-    
     local taBox=CreateSection(Pages.Aim.L,"TargetAim")
     CreateToggle(taBox,"TargetAim",function() return Config['Settings']['Target Aim'] end,function(v) Config['Settings']['Target Aim']=v end)
     CreateToggle(taBox,"KnockCheck",function() return Config['Settings']['Knock Check'] end,function(v) Config['Settings']['Knock Check']=v end)
     CreateToggle(taBox,"VisibleCheck",function() return Config['Settings']['Visible Check'] end,function(v) Config['Settings']['Visible Check']=v end)
-    
     local clBox=CreateSection(Pages.Aim.R,"CameraLock")
     local clBtn=CreateToggle(clBox,"CameraLock",function() return Config['Camera Lock']['Enabled'] end,function(v) Config['Camera Lock']['Enabled']=v end)
     attachKeybind(clBtn,Config['Keybinds']['Camera Lock'])
@@ -2108,7 +2104,6 @@ do --AIM页
     CreateSlider(clBox,"LockPredX",0,100,function() return math.floor(Config['Camera Lock']['Prediction']['X']*100) end,function(v) Config['Camera Lock']['Prediction']['X']=v/100 end)
     CreateSlider(clBox,"LockPredY",0,100,function() return math.floor(Config['Camera Lock']['Prediction']['Y']*100) end,function(v) Config['Camera Lock']['Prediction']['Y']=v/100 end)
     CreateSlider(clBox,"LockPredZ",0,100,function() return math.floor(Config['Camera Lock']['Prediction']['Z']*100) end,function(v) Config['Camera Lock']['Prediction']['Z']=v/100 end)
-    
     local fovBox=CreateSection(Pages.Aim.R,"FOVEnabled")
     CreateToggle(fovBox,"FOVEnabled",function() return Config['FOV']['Enabled'] end,function(v) Config['FOV']['Enabled']=v end)
     CreateToggle(fovBox,"FOVVisible",function() return Config['FOV']['Visible'] end,function(v) Config['FOV']['Visible']=v end)
@@ -2116,7 +2111,6 @@ do --AIM页
     CreateSlider(fovBox,"FOVThickness",1,10,function() return Config['FOV']['Thickness'] end,function(v) Config['FOV']['Thickness']=v end)
     CreateColorPicker(fovBox,"FOVColor",function() return Config['FOV']['Color'] end,function(v) Config['FOV']['Color']=v end)
 end --AIM页
-
 do --VISUALS页
     local espBox=CreateSection(Pages.Visuals.L,"ESP")
     local espBtn=CreateToggle(espBox,"ESP",function() return Config['Visual Awareness']['Enabled'] end,function(v) Config['Visual Awareness']['Enabled']=v end)
@@ -2138,13 +2132,11 @@ do --VISUALS页
         {"BLColor",function() return Config['Visual Awareness']['Blacklist Color'] end,function(v) Config['Visual Awareness']['Blacklist Color']=v end},
         {"TracerColor",function() return Config['Visual Awareness']['Line']['Color'] end,function(v) Config['Visual Awareness']['Line']['Color']=v end},
     })
-    
     local llBox=CreateSection(Pages.Visuals.R,"LockLine")
     CreateToggle(llBox,"LockLine",function() return Config['Lock Line']['Enabled'] end,function(v) Config['Lock Line']['Enabled']=v end)
     CreateColorPicker(llBox,"LockLineColor",function() return Config['Lock Line']['Color'] end,function(v) Config['Lock Line']['Color']=v end)
     CreateSlider(llBox,"LockLineThick",1,10,function() return Config['Lock Line']['Thickness'] end,function(v) Config['Lock Line']['Thickness']=v end)
 end --VISUALS页
-
 do --MISC页
     local SKIN_WEAPONS={'[Revolver]','[Deagle]','[Glock]','[Silencer]','[Double-Barrel SG]','[TacticalShotgun]','[Shotgun]','[Drum-Shotgun]','[SMG]','[Rifle]','[AK47]','[AR]','[AUG]','[DrumGun]','[P90]','[LMG]','[Knife]'}
     local spBox=CreateSection(Pages.Misc.L,"Speed")
@@ -2152,14 +2144,12 @@ do --MISC页
     attachKeybind(spBtn,Config['Keybinds']['Speed'])
     CreateSlider(spBox,"SpeedMult",1,10,function() return Config['Speed']['Multiplier'] end,function(v) Config['Speed']['Multiplier']=v end)
     CreateToggle(spBox,"AntiFling",function() return Config['Speed']['Anti Fling'] end,function(v) Config['Speed']['Anti Fling']=v end)
-    
     local sjBox=CreateSection(Pages.Misc.L,"SuperJump")
     local sjBtn=CreateToggle(sjBox,"SuperJump",function() return Config['Super Jump']['Enabled'] end,function(v) Config['Super Jump']['Enabled']=v end)
     attachKeybind(sjBtn,Config['Keybinds']['Super Jump'])
     CreateSlider(sjBox,"JumpPower",50,500,function() return Config['Super Jump']['Power'] end,function(v) Config['Super Jump']['Power']=v end)
     CreateSlider(sjBox,"JumpCooldown",0,2000,function() return math.floor(Config['Super Jump']['Cooldown']*1000) end,function(v) Config['Super Jump']['Cooldown']=v/1000 end)
     CreateToggle(sjBox,"NoJumpCooldown",function() return Config['No Jump Cooldown']['Enabled'] end,function(v) Config['No Jump Cooldown']['Enabled']=v end)
-    
     local skBox=CreateSection(Pages.Misc.L,"SkinChanger")
     CreateToggle(skBox,"SkinChanger",function() return Config['Skin Changer']['Enabled'] end,function(v) Config['Skin Changer']['Enabled']=v end)
     CreateDropdown(skBox,"SkinWeapon",SKIN_WEAPONS,function() return selectedSkinWeapon end,function(v) selectedSkinWeapon=v end)
@@ -2188,39 +2178,32 @@ do --MISC页
             end
         end
     end)
-    
     local rgBox=CreateSection(Pages.Misc.R,"RageMode")
     local rgBtn=CreateToggle(rgBox,"RageMode",function() return Config['Rage Mode']['Enabled'] end,function(v) Config['Rage Mode']['Enabled']=v end)
     attachKeybind(rgBtn,Config['Keybinds']['Rage Mode'])
     CreateSlider(rgBox,"RageDelay",10,1000,function() return math.floor(Config['Rage Mode']['Delay']*1000) end,function(v) Config['Rage Mode']['Delay']=v/1000 end)
-    
     local dcBox=CreateSection(Pages.Misc.R,"DelayChanger")
     CreateToggle(dcBox,"DelayChanger",function() return Config['Delay Changer']['Enabled'] end,function(v) Config['Delay Changer']['Enabled']=v end)
     CreateSlider(dcBox,"DelayMs",0,1000,function() return math.floor(Config['Delay Changer']['Delay']*1000) end,function(v) Config['Delay Changer']['Delay']=v/1000 end)
     CreateToggle(dcBox,"SpecificWeapons",function() return Config['Delay Changer']['Specific Weapons']['Enabled'] end,function(v) Config['Delay Changer']['Specific Weapons']['Enabled']=v end)
     CreateWeaponBox(dcBox,"WeaponList",function() return Config['Delay Changer']['Specific Weapons']['Weapons'] end,function(v) Config['Delay Changer']['Specific Weapons']['Weapons']=v end)
-    
     local nsBox=CreateSection(Pages.Misc.R,"NoSpread")
     CreateToggle(nsBox,"NoSpread",function() return Config['Spread']['Enabled'] end,function(v) Config['Spread']['Enabled']=v end)
     CreateSlider(nsBox,"SpreadAmount",0,100,function() return Config['Spread']['Amount'] end,function(v) Config['Spread']['Amount']=v end)
     CreateToggle(nsBox,"SpecificWeapons",function() return Config['Spread']['Specific Weapons']['Enabled'] end,function(v) Config['Spread']['Specific Weapons']['Enabled']=v end)
     CreateWeaponBox(nsBox,"WeaponList",function() return Config['Spread']['Specific Weapons']['Weapons'] end,function(v) Config['Spread']['Specific Weapons']['Weapons']=v end)
-    
     local rfBox=CreateSection(Pages.Misc.R,"RapidFire")
     CreateToggle(rfBox,"RapidFire",function() return Config['Rapid Fire']['Enabled'] end,function(v) Config['Rapid Fire']['Enabled']=v end)
     CreateSlider(rfBox,"RapidDelay",10,1000,function() return math.floor(Config['Rapid Fire']['Delay']*1000) end,function(v) Config['Rapid Fire']['Delay']=v/1000 end)
     CreateToggle(rfBox,"SpecificWeapons",function() return Config['Rapid Fire']['Specific Weapons']['Enabled'] end,function(v) Config['Rapid Fire']['Specific Weapons']['Enabled']=v end)
     CreateWeaponBox(rfBox,"WeaponList",function() return Config['Rapid Fire']['Specific Weapons']['Weapons'] end,function(v) Config['Rapid Fire']['Specific Weapons']['Weapons']=v end)
-    
     local irBox=CreateSection(Pages.Misc.R,"InfRange")
     local irBtn=CreateToggle(irBox,"InfRange",function() return Config['Infinite Range']['Enabled'] end,function(v) Config['Infinite Range']['Enabled']=v end)
     attachKeybind(irBtn,Config['Keybinds']['Inf Range'])
     CreateSlider(irBox,"InfMaxRange",100,100000,function() return Config['Infinite Range']['Max Range'] end,function(v) Config['Infinite Range']['Max Range']=v end)
-    
     local hbBox=CreateSection(Pages.Misc.R,"HitboxExp")
     CreateToggle(hbBox,"HitboxExp",function() return Config['Hitbox Expander']['Enabled'] end,function(v) Config['Hitbox Expander']['Enabled']=v end)
     CreateSlider(hbBox,"HitboxSize",1,20,function() return Config['Hitbox Expander']['Size'] end,function(v) Config['Hitbox Expander']['Size']=v end)
-    
     local utilBox=CreateSection(Pages.Misc.R,"Utility")
     CreateToggle(utilBox,"AntiTrip",function() return Config['Utility']['Anti Trip'] end,function(v) Config['Utility']['Anti Trip']=v end)
     CreateToggle(utilBox,"AntiStomp",function() return Config['Utility']['Anti Stomp'] end,function(v) Config['Utility']['Anti Stomp']=v end)
@@ -2228,7 +2211,6 @@ do --MISC页
     CreateToggle(utilBox,"NoRecoil",function() return Config['Utility']['No Recoil'] end,function(v) Config['Utility']['No Recoil']=v end)
     local paBtn=CreateToggle(utilBox,"PurchaseArmor",function() return Config['Purchase Armor']['Enabled'] end,function(v) Config['Purchase Armor']['Enabled']=v end)
     attachKeybind(paBtn,Config['Keybinds']['Purchase Armor'])
-    
     local dtBox=CreateSection(Pages.Misc.R,"DoubleTap")
     CreateToggle(dtBox,"DoubleTap",function() return Config['Double Tap']['Enabled'] end,function(v) Config['Double Tap']['Enabled']=v end)
     CreateWeaponBox(dtBox,"WeaponList",function()
@@ -2239,24 +2221,18 @@ do --MISC页
         Config['Double Tap']['Weapons']={}
         for _,w in pairs(v) do Config['Double Tap']['Weapons'][w]=true end
     end)
-    
     local spoofBox=CreateSection(Pages.Misc.R,"Spoofing")
-    CreateToggle(spoofBox,"Headless",function() return Config['Spoofing']['Headless'] end,function(v) Config['Spoofing']['Headless']=v end)
-    CreateToggle(spoofBox,"AvatarSpoof",function() return Config['Spoofing']['Avatar Spoofer']['Enabled'] end,function(v) Config['Spoofing']['Avatar Spoofer']['Enabled']=v end)
-    local idRow=Instance.new("Frame"); idRow.Size=UDim2.new(1,0,0,24); idRow.BackgroundTransparency=1; idRow.Parent=spoofBox
-    local idLbl=Instance.new("TextLabel"); idLbl.Size=UDim2.new(0.4,-4,1,0); idLbl.Position=UDim2.new(0,4,0,0)
-    idLbl.BackgroundTransparency=1; idLbl.TextColor3=UI.TextDim; idLbl.Font=Enum.Font.Code; idLbl.TextSize=11
-    idLbl.TextXAlignment=Enum.TextXAlignment.Left; idLbl.Parent=idRow; idLbl.Text="User ID"
-    local idBox=Instance.new("TextBox"); idBox.Size=UDim2.new(0.6,0,0,20); idBox.Position=UDim2.new(0.4,0,0.5,-10)
-    idBox.BackgroundColor3=UI.Panel2; idBox.BorderSizePixel=0; idBox.Text=tostring(Config['Spoofing']['Avatar Spoofer']['UserId'])
-    idBox.PlaceholderText="Enter ID"; idBox.TextColor3=UI.Text; idBox.PlaceholderColor3=UI.TextDim
-    idBox.Font=Enum.Font.Code; idBox.TextSize=11; idBox.ClearTextOnFocus=false; idBox.Parent=idRow; addStroke(idBox)
-    idBox.FocusLost:Connect(function()
-        local id = tonumber(idBox.Text)
-        if id then Config['Spoofing']['Avatar Spoofer']['UserId'] = id end
+    -- Headless Toggle (使用新代码)
+    CreateToggle(spoofBox,"Headless",function() return Config['Spoofing']['Headless'] end,function(v) 
+        Config['Spoofing']['Headless']=v 
+        if LocalPlayer.Character then ApplyHeadless(LocalPlayer.Character) end
+    end)
+    -- Korblox Toggle (新增)
+    CreateToggle(spoofBox,"Korblox",function() return Config['Spoofing']['Korblox'] end,function(v) 
+        Config['Spoofing']['Korblox']=v 
+        if LocalPlayer.Character then ApplyKorblox(LocalPlayer.Character) end
     end)
 end --MISC页
-
 do --PLAYERS页
     local plBox=CreateSection(Pages.Players.L,"PlayersSection")
     local playerListContainer=Instance.new("ScrollingFrame")
@@ -2265,7 +2241,6 @@ do --PLAYERS页
     playerListContainer.ScrollBarImageColor3=UI.Accent; playerListContainer.AutomaticCanvasSize=Enum.AutomaticSize.Y
     playerListContainer.CanvasSize=UDim2.new(0,0,0,0); playerListContainer.Parent=plBox
     local PLL=Instance.new("UIListLayout"); PLL.Padding=UDim.new(0,4); PLL.Parent=playerListContainer
-    
     buildPlayerList=function()
         for _,ch in pairs(playerListContainer:GetChildren()) do if ch:IsA("Frame") then ch:Destroy() end end
         for _,player in pairs(Players:GetPlayers()) do
@@ -2276,7 +2251,6 @@ do --PLAYERS页
                 nl.BackgroundTransparency=1; nl.Text=player.DisplayName.." @ "..player.Name; nl.TextColor3=UI.Text
                 nl.Font=Enum.Font.Code; nl.TextSize=11; nl.TextXAlignment=Enum.TextXAlignment.Left
                 nl.TextTruncate=Enum.TextTruncate.AtEnd; nl.Parent=row
-                
                 local wlBtn=Instance.new("TextButton"); wlBtn.Size=UDim2.new(0,32,0,16); wlBtn.AnchorPoint=Vector2.new(1,.5)
                 wlBtn.Position=UDim2.new(1,-110,.5,0); wlBtn.Text="WL"; wlBtn.Font=Enum.Font.Code; wlBtn.TextSize=10; wlBtn.BorderSizePixel=0; wlBtn.Parent=row
                 local blBtn=Instance.new("TextButton"); blBtn.Size=UDim2.new(0,32,0,16); blBtn.AnchorPoint=Vector2.new(1,.5)
@@ -2285,7 +2259,6 @@ do --PLAYERS页
                 tpBtn.Position=UDim2.new(1,-38,.5,0); tpBtn.Text=T("TPFace"); tpBtn.Font=Enum.Font.Code; tpBtn.TextSize=10; tpBtn.BorderSizePixel=0; tpBtn.BackgroundColor3=UI.ToggleOff; tpBtn.TextColor3=UI.TextDim; tpBtn.Parent=row
                 local tgBtn=Instance.new("TextButton"); tgBtn.Size=UDim2.new(0,32,0,16); tgBtn.AnchorPoint=Vector2.new(1,.5)
                 tgBtn.Position=UDim2.new(1,-2,.5,0); tgBtn.Text=T("TGFollow"); tgBtn.Font=Enum.Font.Code; tgBtn.TextSize=10; tgBtn.BorderSizePixel=0; tgBtn.Parent=row
-                
                 local function updateBtns()
                     local wl=Whitelist[player.UserId]==true; local bl=Blacklist[player.UserId]==true
                     local tg=Config['Teleport']['Target']==player.UserId and Config['Teleport']['Enabled']
@@ -2321,13 +2294,11 @@ do --PLAYERS页
     buildPlayerList()
     track(Players.PlayerAdded:Connect(function() task.wait(1) if not Unloaded then buildPlayerList() end end))
     track(Players.PlayerRemoving:Connect(function() task.wait(.5) if not Unloaded then buildPlayerList() end end))
-    
     local tpBox=CreateSection(Pages.Players.R,"Teleport")
     CreateToggle(tpBox,"TeleportEnable",function() return Config['Teleport']['Enabled'] end,function(v) Config['Teleport']['Enabled']=v; buildPlayerList() end)
     CreateDropdown(tpBox,"TeleportMode",{"Follow","Orbit"},function() return Config['Teleport']['Mode'] end,function(v) Config['Teleport']['Mode']=v end)
     CreateSlider(tpBox,"TeleportDist",0,50,function() return Config['Teleport']['Distance'] end,function(v) Config['Teleport']['Distance']=v end)
     CreateSlider(tpBox,"TeleportSpeed",0,50,function() return Config['Teleport']['Speed'] end,function(v) Config['Teleport']['Speed']=v end)
-    
     local cfBox=CreateSection(Pages.Players.R,"ConfigSection")
     configNameBox=Instance.new("TextBox"); configNameBox.Size=UDim2.new(1,-70,0,24)
     configNameBox.BackgroundColor3=UI.Panel2; configNameBox.BorderSizePixel=0; configNameBox.PlaceholderText=T("ConfigName")
@@ -2338,13 +2309,11 @@ do --PLAYERS页
     saveBtn.Position=UDim2.new(1,0,0,0); saveBtn.BackgroundColor3=UI.Accent; saveBtn.BorderSizePixel=0
     saveBtn.Font=Enum.Font.Code; saveBtn.TextSize=11; saveBtn.TextColor3=Color3.new(1,1,1); saveBtn.Parent=cfBox
     registerLang(saveBtn,"Save"); table.insert(AccentElements,saveBtn)
-    
     local configListContainer=Instance.new("ScrollingFrame"); configListContainer.Size=UDim2.new(1,0,0,140)
     configListContainer.BackgroundTransparency=1; configListContainer.BorderSizePixel=0; configListContainer.ScrollBarThickness=2
     configListContainer.ScrollBarImageColor3=UI.Accent; configListContainer.AutomaticCanvasSize=Enum.AutomaticSize.Y
     configListContainer.CanvasSize=UDim2.new(0,0,0,0); configListContainer.Parent=cfBox
     local CLL=Instance.new("UIListLayout"); CLL.Padding=UDim.new(0,4); CLL.Parent=configListContainer
-    
     buildConfigList=function()
         for _,ch in pairs(configListContainer:GetChildren()) do if ch:IsA("Frame") or ch:IsA("TextLabel") then ch:Destroy() end end
         if not filesAvailable() then
@@ -2374,11 +2343,9 @@ do --PLAYERS页
         if name~="" then saveConfigFile(name); buildConfigList(); configNameBox.Text="" end
     end)
 end --PLAYERS页
-
 do --SETTINGS页
     local uiBox=CreateSection(Pages.Settings.L,"UIToggleKey")
     CreateKeybindRow(uiBox,"UIToggleKey",Config['Keybinds'][' UI Toggle'])
-    
     local thBox=CreateSection(Pages.Settings.L,"ThemeColor")
     CreateColorPicker(thBox,"ThemeColor",
     function() return UI.Accent end,
@@ -2392,7 +2359,6 @@ do --SETTINGS页
         end
         refreshAllComponents()
     end)
-    
     local lgBox=CreateSection(Pages.Settings.L,"Language")
     local LangBtn=Instance.new("TextButton"); LangBtn.Size=UDim2.new(1,0,0,24); LangBtn.BackgroundColor3=UI.Panel2
     LangBtn.BorderSizePixel=0; LangBtn.Text=""; LangBtn.AutoButtonColor=false; LangBtn.Parent=lgBox; addStroke(LangBtn)
@@ -2408,7 +2374,6 @@ do --SETTINGS页
         LangVal.Text=(CurrentLang=="EN") and "English" or "中文"
         refreshLanguage(); configNameBox.PlaceholderText=T("ConfigName"); buildConfigList(); buildPlayerList(); updateKeybindDisplay()
     end)
-    
     local unBox=CreateSection(Pages.Settings.R,"Unload")
     local panicLbl=Instance.new("TextLabel"); panicLbl.Size=UDim2.new(1,0,0,16); panicLbl.BackgroundTransparency=1
     panicLbl.TextColor3=UI.TextDim; panicLbl.Font=Enum.Font.Code; panicLbl.TextSize=10
@@ -2420,7 +2385,6 @@ do --SETTINGS页
     registerLang(UnloadBtn,"Unload")
     UnloadBtn.MouseButton1Click:Connect(UnloadScript)
 end --SETTINGS页
-
 track(UserInputService.InputBegan:Connect(function(input)
     if Unloaded or not Started then return end
     if WaitingForKey or BindConsumed then return end
@@ -2433,7 +2397,6 @@ track(UserInputService.InputBegan:Connect(function(input)
         return
     end
 end))
-
 do --HUD
     local hudText=Instance.new("TextLabel"); hudText.Parent=hudGui
     hudText.AnchorPoint=Vector2.new(.5,1); hudText.Position=UDim2.new(.5,0,1,-20)
@@ -2456,9 +2419,8 @@ do --HUD
         hudText.Text=table.concat(lines," | ")
     end))
 end --HUD
-
 print("==========================================")
-print("  hate loaded (ecco ports + health/skeleton esp)")
+print("  hate loaded (ecco ports + health/skeleton esp + Korblox/Headless)")
 print("  UI Open Key: "..(Config['Keybinds'][' UI Toggle'].Key or "RightShift"))
 print("  F9 = Panic Hide")
 print("==========================================")
